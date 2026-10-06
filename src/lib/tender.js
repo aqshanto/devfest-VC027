@@ -24,6 +24,7 @@ export function parseTender(text) {
       has_expiry: r.has_expiry === true,
     }
   })
+  if (new Set(requirements.map((r) => r.id)).size !== requirements.length) throw new Error('errJsonFields')
   requirements.sort((a, b) => a.order - b.order)
 
   return {

@@ -50,5 +50,9 @@ describe('parseTender', () => {
     expect(t.requirements.map((r) => r.id)).toEqual(['A', 'B'])
     expect(() => parseTender('{bad')).toThrow('errJson')
     expect(() => parseTender('{}')).toThrow('errJsonFields')
+    expect(() => parseTender(JSON.stringify({
+      tender: { tender_id: 'T1', submission_deadline: DL },
+      requirements: [{ id: 'A', order: 1, title_en: 'a' }, { id: 'A', order: 2, title_en: 'b' }],
+    }))).toThrow('errJsonFields')
   })
 })

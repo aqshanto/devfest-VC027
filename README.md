@@ -86,6 +86,15 @@ Handy URL parameters: `?lang=bn|en`, `?theme=dark|light`, `?sample=1` (auto-load
 - Each page is scaled to about 96% to make room for the footer, so page content is slightly smaller.
 - Download-manager browser extensions (for example IDM) can intercept PDF requests and break **Try sample**. Uploading files by hand still works.
 
+## Security & robustness
+
+- No `innerHTML` or `eval`. All user text (file names, JSON fields) is rendered as plain text by React, so there is no XSS.
+- The CSV export neutralises cells that start with `=`, `+`, `-` or `@`, which stops spreadsheet formula injection.
+- Project files are re-validated on import: the tender is checked like `requirements.json`, PDF headers are re-checked, and thumbnails or other values from the file are never trusted.
+- Requirement IDs must be unique. Files are checked by their `%PDF` header and PNG signature, not only by extension.
+- Security headers come from `vercel.json` (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`).
+- `npm audit --omit=dev` reports 0 vulnerabilities. There are no secrets or keys, and nothing leaves the browser.
+
 ## AI tools used
 
 - **Claude Code (Claude Opus 5.5)**: planning (`Plan.md`), code generation, testing, git commits and README. Every prompt is listed in [`Prompt.md`](Prompt.md) and in each commit message.

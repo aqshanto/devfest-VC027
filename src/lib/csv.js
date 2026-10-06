@@ -1,6 +1,7 @@
 // Bonus: checklist export as CSV (document, file name, pages, expiry date, status).
 const cell = (v) => {
-  const s = String(v ?? '')
+  let s = String(v ?? '')
+  if (/^[=+\-@\t\r]/.test(s)) s = "'" + s // stop spreadsheet formula injection
   return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
 }
 

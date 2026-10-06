@@ -2,9 +2,9 @@ import { expect, it } from 'vitest'
 import { exportProject, importProject } from './project.js'
 
 it('round-trips a project with file bytes', () => {
-  const bytes = new Uint8Array([37, 80, 68, 70, 0, 255, 128])
+  const bytes = new Uint8Array([37, 80, 68, 70, 45, 49, 0, 255, 128]) // %PDF-1 ...
   const text = exportProject({
-    data: { tender: { tender_id: 'T1', submission_deadline: '2026-10-20' }, requirements: [{ id: 'R1' }] },
+    data: { tender: { tender_id: 'T1', submission_deadline: '2026-10-20' }, requirements: [{ id: 'R1', order: 1, title_en: 'Doc' }] },
     files: [{ id: 'f1', name: 'a.pdf', bytes, pages: 1, hash: 'h', thumb: 'data:x' }, { id: 'f2', name: 'b.png', error: 'notPdf' }],
     matches: { R1: 'f1', R2: 'gone' },
     expiry: { R1: '2027-01-01' },

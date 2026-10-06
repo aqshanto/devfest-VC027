@@ -153,7 +153,7 @@ function drawFooter(page, font, text) {
  * withIndex: add an index page after the cover (bonus).
  * Returns { bytes: Uint8Array, totalPages }.
  */
-export async function buildPackage({ tender, requirements, matches, files, generatedOn, withIndex = false, textImage }) {
+export async function buildPackage({ tender, requirements, matches, files, generatedOn, withIndex = false, textImage, seal }) {
   const docs = includedDocs(requirements, matches, files)
   const pdf = await PDFDocument.create()
   pdf.setTitle(`${tender.tender_id} Package`)
@@ -193,6 +193,9 @@ export async function buildPackage({ tender, requirements, matches, files, gener
 
   // Each source page is embedded and scaled into a page of the same size,
   // leaving a blank band at the bottom so the footer never covers content.
+  // Bonus: seal / signature PNG on chosen pages (seal = { bytes, mode: 'all' | 'last' })
+  const sealImg = seal?.bytes && seal.mode !== 'none' ? await pdf.embedPng(seal.bytes) : null
+
   for (const { file } of docs) {
     const src = await PDFDocument.load(file.bytes, { ignoreEncryption: true })
     const embedded = await pdf.embedPages(src.getPages())
@@ -212,6 +215,12 @@ export async function buildPackage({ tender, requirements, matches, files, gener
       else if (angle === 180) page.drawPage(ep, { x: x0 + dw, y: y0 + dh, xScale: s, yScale: s, rotate: { type: 'degrees', angle: 180 } })
       else if (angle === 90) page.drawPage(ep, { x: x0, y: y0 + dh, xScale: s, yScale: s, rotate: { type: 'degrees', angle: -90 } })
       else page.drawPage(ep, { x: x0 + dw, y: y0, xScale: s, yScale: s, rotate: { type: 'degrees', angle: 90 } })
+
+      if (sealImg && (seal.mode === 'all' || i === embedded.length - 1)) {
+        const sw = Math.min(90, w * 0.18)
+        const sh = (sealImg.height / sealImg.width) * sw
+        page.drawImage(sealImg, { x: w - sw - 36, y: FOOTER_BAND + 14, width: sw, height: sh, opacity: 0.92 })
+      }
     })
   }
 

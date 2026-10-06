@@ -17,5 +17,6 @@
 | B4 | Smart Read | "ami chassi 1 number ta korte" (Smart Read: read PDF text to detect document type and expiry date, used by auto-match and one-click date suggestions) |
 | B5 | Thumbnails | "tmi add koro" (page-1 thumbnails in the file list) |
 | B6 | Bangla on PDF | "next" (Bangla text shown correctly on the PDF cover/index page) |
+| B7 | Seal / signature | "next" (Bonus: seal or signature - user uploads a PNG image and places it on chosen pages) |
 
 Most useful prompt (for README): _to be chosen at the end._

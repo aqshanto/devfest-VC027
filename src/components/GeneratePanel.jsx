@@ -1,7 +1,7 @@
-import { AlertCircle, CheckCircle2, Download, Eye, ListOrdered, Loader2, PackageCheck, PackagePlus } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Download, Eye, ListOrdered, Loader2, PackageCheck, PackagePlus, Stamp, X } from 'lucide-react'
 import { useT } from '../i18n.js'
 
-export default function GeneratePanel({ blocked, statuses, busy, result, fileName, onGenerate, onDownload, onPreview, withIndex, onWithIndex }) {
+export default function GeneratePanel({ blocked, statuses, busy, result, fileName, onGenerate, onDownload, onPreview, withIndex, onWithIndex, seal, sealMode, onSeal, onSealMode, onSealRemove }) {
   const { t, lang, num } = useT()
   const ready = blocked.length === 0
 
@@ -22,6 +22,34 @@ export default function GeneratePanel({ blocked, statuses, busy, result, fileNam
         <ListOrdered className="size-4 text-violet-500" />
         {t('withIndex')}
       </label>
+
+      <div className="flex flex-wrap items-center gap-2 rounded-xl px-1 text-sm text-slate-600 dark:text-slate-300">
+        <Stamp className="size-4 text-fuchsia-500" />
+        <span>{t('seal')}</span>
+        {seal ? (
+          <>
+            <img src={seal.url} alt={seal.name} className="h-8 w-8 rounded border border-slate-200 bg-white object-contain dark:border-slate-600" />
+            <select
+              value={sealMode}
+              onChange={(e) => onSealMode(e.target.value)}
+              className="cursor-pointer rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs dark:border-slate-700 dark:bg-slate-900"
+              aria-label={t('sealPages')}
+            >
+              <option value="last">{t('sealLast')}</option>
+              <option value="all">{t('sealAll')}</option>
+              <option value="none">{t('sealNone')}</option>
+            </select>
+            <button onClick={onSealRemove} className="cursor-pointer rounded p-1 text-slate-400 hover:text-rose-600" title={t('remove')} aria-label={t('remove')}>
+              <X className="size-4" />
+            </button>
+          </>
+        ) : (
+          <label className="btn-ghost cursor-pointer px-2.5 py-1 text-xs">
+            {t('sealUpload')}
+            <input type="file" accept="image/png" hidden onChange={(e) => { e.target.files[0] && onSeal([e.target.files[0]]); e.target.value = '' }} />
+          </label>
+        )}
+      </div>
 
       {!ready ? (
         <div className="rounded-xl bg-rose-50 p-3 text-sm dark:bg-rose-500/10">

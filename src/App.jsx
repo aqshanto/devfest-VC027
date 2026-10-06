@@ -108,14 +108,22 @@ export default function App() {
   const [generating, setGenerating] = useState(false)
   const [withIndex, setWithIndex] = useState(true)
   const [showPreview, setShowPreview] = useState(false)
-  useEffect(() => setResult(null), [data, files, matches, expiry, withIndex])
+  const [seal, setSeal] = useState(null) // { bytes, url, name }
+  const [sealMode, setSealMode] = useState('last')
+  const pickSeal = async ([file]) => {
+    const bytes = new Uint8Array(await file.arrayBuffer())
+    const isPng = [0x89, 0x50, 0x4e, 0x47].every((b, i) => bytes[i] === b)
+    if (!isPng) return toast('error', t('sealNotPng', { name: file.name }))
+    setSeal({ bytes, name: file.name, url: URL.createObjectURL(file) })
+  }
+  useEffect(() => setResult(null), [data, files, matches, expiry, withIndex, seal, sealMode])
   const packageName = data ? `${data.tender.tender_id}_Package.pdf` : ''
 
   const generate = async () => {
     if (blocked.length) return
     setGenerating(true)
     try {
-      const res = await buildPackage({ ...data, matches, files, generatedOn: todayISO(), withIndex, textImage })
+      const res = await buildPackage({ ...data, matches, files, generatedOn: todayISO(), withIndex, textImage, seal: seal && { bytes: seal.bytes, mode: sealMode } })
       setResult(res)
       toast('success', t('generated', { n: res.totalPages }))
     } catch (e) {
@@ -291,6 +299,11 @@ export default function App() {
                   onGenerate={generate}
                   withIndex={withIndex}
                   onWithIndex={setWithIndex}
+                  seal={seal}
+                  sealMode={sealMode}
+                  onSeal={pickSeal}
+                  onSealMode={setSealMode}
+                  onSealRemove={() => setSeal(null)}
                   onDownload={() => downloadBytes(result.bytes, packageName)}
                   onPreview={() => setShowPreview(true)}
                 />

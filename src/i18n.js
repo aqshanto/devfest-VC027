@@ -102,6 +102,7 @@ export const dict = {
     sealAll: 'All pages',
     sealLast: 'Last page of each document',
     sealNone: 'None',
+    sealNotPng: '"{name}" is not a PNG image.',
     reset: 'Start over',
   },
   bn: {
@@ -199,6 +200,7 @@ export const dict = {
     sealAll: 'সব পৃষ্ঠায়',
     sealLast: 'প্রতিটি কাগজের শেষ পৃষ্ঠায়',
     sealNone: 'কোথাও না',
+    sealNotPng: '"{name}" PNG ছবি নয়।',
     reset: 'নতুন করে শুরু',
   },
 }

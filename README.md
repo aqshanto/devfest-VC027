@@ -69,7 +69,7 @@ Handy URL parameters: `?lang=bn|en`, `?theme=dark|light`, `?sample=1` (auto-load
 - The date picker shows the browser's own date format (for example mm/dd/yyyy). It is stored as YYYY-MM-DD.
 - The PDF cover page is English only (the problem asks for English); Bangla on the cover is a bonus item.
 - Each page is scaled to about 96% to make room for the footer, so page content is slightly smaller.
-- Headless Chrome returns an empty body for `fetch()` of `application/pdf`, so the screenshot script serves the sample PDFs itself. Normal Chrome is not affected.
+- Download-manager browser extensions (for example IDM) can intercept PDF requests and break **Try sample**. Uploading files by hand still works.
 
 ## AI tools used
 

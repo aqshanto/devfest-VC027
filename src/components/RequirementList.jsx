@@ -1,7 +1,7 @@
 import { ListChecks, Timer } from 'lucide-react'
 import { useT } from '../i18n.js'
 
-export default function RequirementList({ requirements, renderExtra }) {
+export default function RequirementList({ requirements, renderRight, renderBelow }) {
   const { t, num, lang } = useT()
   return (
     <section className="glass rise p-4 sm:p-5">
@@ -43,8 +43,9 @@ export default function RequirementList({ requirements, renderExtra }) {
                   )}
                 </div>
               </div>
-              {renderExtra?.(r)}
+              {renderRight?.(r)}
             </div>
+            {renderBelow?.(r)}
           </li>
         ))}
       </ul>

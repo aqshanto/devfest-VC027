@@ -6,6 +6,10 @@ import DropZone from './components/DropZone.jsx'
 import TenderCard from './components/TenderCard.jsx'
 import RequirementList from './components/RequirementList.jsx'
 import FilePanel from './components/FilePanel.jsx'
+import MatchControl from './components/MatchControl.jsx'
+import StatusChip from './components/StatusChip.jsx'
+import SummaryBar from './components/SummaryBar.jsx'
+import { BLOCKING, getAllStatuses } from './lib/status.js'
 import { useToast } from './components/Toasts.jsx'
 import { useT } from './i18n.js'
 import { parseTender } from './lib/tender.js'
@@ -14,12 +18,34 @@ import { MAX_BYTES, MAX_FILES, findDuplicates, readFile } from './lib/files.js'
 const SAMPLE = '/sample/'
 
 export default function App() {
-  const { t } = useT()
+  const { t, lang, num } = useT()
   const toast = useToast()
   const [data, setData] = useState(null) // { tender, requirements }
   const [files, setFiles] = useState([])
   const [busy, setBusy] = useState(false)
   const dupOf = useMemo(() => findDuplicates(files), [files])
+  const [matches, setMatches] = useState({}) // reqId → fileId
+  const [expiry, setExpiry] = useState({}) // reqId → YYYY-MM-DD
+
+  const statuses = useMemo(
+    () => (data ? getAllStatuses(data.requirements, matches, expiry, data.tender.submission_deadline) : {}),
+    [data, matches, expiry],
+  )
+  const blocked = data ? data.requirements.filter((r) => BLOCKING.has(statuses[r.id])) : []
+
+  const usedBy = useMemo(() => {
+    const out = {}
+    for (const r of data?.requirements || []) {
+      if (matches[r.id]) out[matches[r.id]] = `${num(r.order)}. ${lang === 'bn' ? r.title_bn : r.title_en}`
+    }
+    return out
+  }, [data, matches, lang, num])
+
+  const setMatch = (reqId, fileId) => {
+    setMatches((m) => ({ ...m, [reqId]: fileId }))
+    setExpiry((e) => ({ ...e, [reqId]: '' })) // expiry belongs to the chosen file
+  }
+  const setExpiryFor = (reqId, date) => setExpiry((e) => ({ ...e, [reqId]: date }))
 
   const addFiles = async (list) => {
     setBusy(true)
@@ -47,11 +73,22 @@ export default function App() {
     if (ok) toast('success', t('filesAdded', { n: ok }))
   }
 
-  const removeFile = (id) => setFiles((xs) => xs.filter((f) => f.id !== id))
+  const removeFile = (id) => {
+    setFiles((xs) => xs.filter((f) => f.id !== id))
+    for (const [rid, fid] of Object.entries(matches)) if (fid === id) setMatch(rid, null)
+  }
+
+  const resetTender = () => {
+    setData(null)
+    setMatches({})
+    setExpiry({})
+  }
 
   const loadTenderText = (text) => {
     try {
       setData(parseTender(text))
+      setMatches({})
+      setExpiry({})
       toast('success', t('tenderLoaded'))
       return true
     } catch (e) {
@@ -94,7 +131,7 @@ export default function App() {
       <TopBar tenderId={data?.tender.tender_id} />
 
       <main className="relative mx-auto max-w-7xl space-y-6 px-4 py-6">
-        <Stepper done={[!!data, files.some((f) => !f.error), false, false]} />
+        <Stepper done={[!!data, files.some((f) => !f.error), !!data && blocked.length === 0, false]} />
 
         {!data ? (
           <section className="glass rise mx-auto max-w-2xl space-y-4 p-6">
@@ -108,13 +145,20 @@ export default function App() {
           </section>
         ) : (
           <>
-            <TenderCard tender={data.tender} onChange={() => setData(null)} />
+            <TenderCard tender={data.tender} onChange={resetTender} />
+            <SummaryBar statuses={statuses} />
             <div className="grid gap-6 lg:grid-cols-3">
               <div className="lg:col-span-2">
-                <RequirementList requirements={data.requirements} />
+                <RequirementList
+                  requirements={data.requirements}
+                  renderRight={(r) => <StatusChip status={statuses[r.id]} />}
+                  renderBelow={(r) => (
+                    <MatchControl req={r} files={files} matches={matches} expiry={expiry} onMatch={setMatch} onExpiry={setExpiryFor} />
+                  )}
+                />
               </div>
               <aside className="lg:sticky lg:top-20 lg:self-start">
-                <FilePanel files={files} dupOf={dupOf} busy={busy} onAdd={addFiles} onRemove={removeFile} />
+                <FilePanel files={files} dupOf={dupOf} busy={busy} onAdd={addFiles} onRemove={removeFile} usedBy={usedBy} />
               </aside>
             </div>
           </>

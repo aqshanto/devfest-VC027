@@ -13,6 +13,7 @@ import StatusChip from './components/StatusChip.jsx'
 import SummaryBar from './components/SummaryBar.jsx'
 import { BLOCKING, getAllStatuses } from './lib/status.js'
 import GeneratePanel from './components/GeneratePanel.jsx'
+import PdfPreview from './components/PdfPreview.jsx'
 import { buildPackage, downloadBytes } from './lib/package.js'
 import { useToast } from './components/Toasts.jsx'
 import { useT } from './i18n.js'
@@ -91,6 +92,7 @@ export default function App() {
   const [result, setResult] = useState(null) // { bytes, totalPages }
   const [generating, setGenerating] = useState(false)
   const [withIndex, setWithIndex] = useState(true)
+  const [showPreview, setShowPreview] = useState(false)
   useEffect(() => setResult(null), [data, files, matches, expiry, withIndex])
   const packageName = data ? `${data.tender.tender_id}_Package.pdf` : ''
 
@@ -100,7 +102,6 @@ export default function App() {
     try {
       const res = await buildPackage({ ...data, matches, files, generatedOn: todayISO(), withIndex })
       setResult(res)
-      downloadBytes(res.bytes, packageName)
       toast('success', t('generated', { n: res.totalPages }))
     } catch (e) {
       console.error(e)
@@ -269,6 +270,7 @@ export default function App() {
                   withIndex={withIndex}
                   onWithIndex={setWithIndex}
                   onDownload={() => downloadBytes(result.bytes, packageName)}
+                  onPreview={() => setShowPreview(true)}
                 />
                 <FilePanel files={files} dupOf={dupOf} busy={busy} onAdd={addFiles} onRemove={removeFile} usedBy={usedBy} />
               </aside>
@@ -276,6 +278,16 @@ export default function App() {
           </>
         )}
       </main>
+
+      {showPreview && result && (
+        <PdfPreview
+          bytes={result.bytes}
+          fileName={packageName}
+          totalPages={result.totalPages}
+          onClose={() => setShowPreview(false)}
+          onDownload={() => downloadBytes(result.bytes, packageName)}
+        />
+      )}
 
       <footer className="relative flex items-center justify-center gap-2 py-6 text-xs text-slate-500 dark:text-slate-400">
         <ShieldCheck className="size-4 text-emerald-500" />

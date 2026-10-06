@@ -1,14 +1,14 @@
-import { AlertCircle, CheckCircle2, Download, ListOrdered, Loader2, PackageCheck, Wand2 } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Download, Eye, ListOrdered, Loader2, PackageCheck, PackagePlus } from 'lucide-react'
 import { useT } from '../i18n.js'
 
-export default function GeneratePanel({ blocked, statuses, busy, result, fileName, onGenerate, onDownload, withIndex, onWithIndex }) {
+export default function GeneratePanel({ blocked, statuses, busy, result, fileName, onGenerate, onDownload, onPreview, withIndex, onWithIndex }) {
   const { t, lang, num } = useT()
   const ready = blocked.length === 0
 
   return (
     <section className="glass rise space-y-3 p-4 sm:p-5">
       <button className="btn-primary w-full py-3 text-base" disabled={!ready || busy} onClick={onGenerate}>
-        {busy ? <Loader2 className="size-5 animate-spin" /> : <Wand2 className="size-5" />}
+        {busy ? <Loader2 className="size-5 animate-spin" /> : <PackagePlus className="size-5" />}
         {busy ? t('generating') : t('generate')}
       </button>
 
@@ -44,16 +44,24 @@ export default function GeneratePanel({ blocked, statuses, busy, result, fileNam
           </ul>
         </div>
       ) : result ? (
-        <div className="flex items-center gap-3 rounded-xl bg-emerald-50 p-3 text-sm dark:bg-emerald-500/10">
-          <PackageCheck className="size-8 shrink-0 text-emerald-500" />
-          <div className="min-w-0 flex-1">
-            <p className="font-semibold text-emerald-800 dark:text-emerald-200">{t('generated', { n: result.totalPages })}</p>
-            <p className="truncate font-mono text-xs text-emerald-700/80 dark:text-emerald-300/80">{fileName}</p>
+        <div className="rise space-y-3 rounded-xl bg-emerald-50 p-3 text-sm dark:bg-emerald-500/10">
+          <div className="flex items-center gap-3">
+            <PackageCheck className="size-8 shrink-0 text-emerald-500" />
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold text-emerald-800 dark:text-emerald-200">{t('generated', { n: result.totalPages })}</p>
+              <p className="truncate font-mono text-xs text-emerald-700/80 dark:text-emerald-300/80">{fileName}</p>
+            </div>
           </div>
-          <button className="btn bg-emerald-600 text-white hover:bg-emerald-700" onClick={onDownload}>
-            <Download className="size-4" />
-            {t('download')}
-          </button>
+          <div className="grid grid-cols-2 gap-2">
+            <button className="btn bg-white text-emerald-700 ring-1 ring-emerald-300 hover:bg-emerald-100 dark:bg-slate-900 dark:text-emerald-300 dark:ring-emerald-500/40" onClick={onPreview}>
+              <Eye className="size-4" />
+              {t('preview')}
+            </button>
+            <button className="btn bg-emerald-600 text-white hover:bg-emerald-700" onClick={onDownload}>
+              <Download className="size-4" />
+              {t('download')}
+            </button>
+          </div>
         </div>
       ) : (
         <p className="flex items-center gap-1.5 rounded-xl bg-emerald-50 p-3 text-sm font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">

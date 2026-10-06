@@ -13,5 +13,6 @@
 | B1b | Wrong-file warning | "ami jokhon TIN certificate e onno kono document dissilam eta seta ke thik ase dhore nissilo. eta ki ekta problem na ?" |
 | B2 | Index page | "next" (Bonus 2: index page after the cover showing the page number where each document starts) |
 | B3 | CSV export | "ami save/reopen chassi na. sudhu CSV checklist export feature ta add koro" |
+| UX | Preview + Download | "generate package option e click korlei duita option show kore ekta holo preview, arekta download ... ar generate package er onno kono icon use kora jabe na ?" |
 
 Most useful prompt (for README): _to be chosen at the end._

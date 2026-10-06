@@ -30,7 +30,7 @@ How to use:
 1. **Tender:** load `requirements.json` (or click **Try sample**).
 2. **Files:** drop/upload PDF files (many at once).
 3. **Match & Check:** choose a file for each required document, enter expiry dates where asked. Statuses update instantly.
-4. **Generate:** when nothing is blocking, click **Generate package**. `<tender_id>_Package.pdf` downloads.
+4. **Generate:** when nothing is blocking, click **Generate package**, then **Preview** or **Download** `<tender_id>_Package.pdf`.
 
 Handy URL parameters: `?lang=bn|en`, `?theme=dark|light`, `?sample=1` (auto-load the sample pack), `&demo=problems|ready` (pre-filled matches used for screenshots).
 
@@ -46,7 +46,7 @@ Handy URL parameters: `?lang=bn|en`, `?theme=dark|light`, `?sample=1` (auto-load
   - an English cover page with tender ID, title, procuring entity, bidder, deadline, generation date, and the included documents in order;
   - every page of each document after the cover, sorted by `order`, with optional documents that have no file skipped;
   - the footer `<tender_id> | Page X of Y` on every page, including the cover. Each page is scaled into a reserved bottom band, so the footer never covers content.
-- **4.8 Download:** the file is named `<tender_id>_Package.pdf`.
+- **4.8 Download:** after **Generate package**, the user chooses **Preview** (an in-app PDF viewer, closed with Esc) or **Download**. The file is named `<tender_id>_Package.pdf`.
 - **4.9 Two languages:** a one-click EN/বাংলা toggle that is remembered in `localStorage`. Every label, button, status, error and instruction is translated, and numbers show as Bangla digits. Document names come from `title_bn` or `title_en`.
 - Output: [`output/T-2026-0417_Package.pdf`](output/T-2026-0417_Package.pdf) is built from the sample pack after resolving its problems (17 pages: cover, index and 15 document pages).
 - Polished UI: gradient and glass design, dark mode, 4-step stepper, toasts, mobile layout.

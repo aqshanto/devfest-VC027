@@ -10,9 +10,11 @@ import MatchControl from './components/MatchControl.jsx'
 import StatusChip from './components/StatusChip.jsx'
 import SummaryBar from './components/SummaryBar.jsx'
 import { BLOCKING, getAllStatuses } from './lib/status.js'
+import GeneratePanel from './components/GeneratePanel.jsx'
+import { buildPackage, downloadBytes } from './lib/package.js'
 import { useToast } from './components/Toasts.jsx'
 import { useT } from './i18n.js'
-import { parseTender } from './lib/tender.js'
+import { parseTender, todayISO } from './lib/tender.js'
 import { MAX_BYTES, MAX_FILES, findDuplicates, readFile } from './lib/files.js'
 
 const SAMPLE = '/sample/'
@@ -46,6 +48,28 @@ export default function App() {
     setExpiry((e) => ({ ...e, [reqId]: '' })) // expiry belongs to the chosen file
   }
   const setExpiryFor = (reqId, date) => setExpiry((e) => ({ ...e, [reqId]: date }))
+
+  // Generate (task 4.7 / 4.8)
+  const [result, setResult] = useState(null) // { bytes, totalPages }
+  const [generating, setGenerating] = useState(false)
+  useEffect(() => setResult(null), [data, files, matches, expiry])
+  const packageName = data ? `${data.tender.tender_id}_Package.pdf` : ''
+
+  const generate = async () => {
+    if (blocked.length) return
+    setGenerating(true)
+    try {
+      const res = await buildPackage({ ...data, matches, files, generatedOn: todayISO() })
+      setResult(res)
+      downloadBytes(res.bytes, packageName)
+      toast('success', t('generated', { n: res.totalPages }))
+    } catch (e) {
+      console.error(e)
+      toast('error', t('genError'))
+    } finally {
+      setGenerating(false)
+    }
+  }
 
   const addFiles = async (list) => {
     setBusy(true)
@@ -131,7 +155,7 @@ export default function App() {
       <TopBar tenderId={data?.tender.tender_id} />
 
       <main className="relative mx-auto max-w-7xl space-y-6 px-4 py-6">
-        <Stepper done={[!!data, files.some((f) => !f.error), !!data && blocked.length === 0, false]} />
+        <Stepper done={[!!data, files.some((f) => !f.error), !!data && blocked.length === 0, !!result]} />
 
         {!data ? (
           <section className="glass rise mx-auto max-w-2xl space-y-4 p-6">
@@ -157,7 +181,16 @@ export default function App() {
                   )}
                 />
               </div>
-              <aside className="lg:sticky lg:top-20 lg:self-start">
+              <aside className="space-y-6">
+                <GeneratePanel
+                  blocked={blocked}
+                  statuses={statuses}
+                  busy={generating}
+                  result={result}
+                  fileName={packageName}
+                  onGenerate={generate}
+                  onDownload={() => downloadBytes(result.bytes, packageName)}
+                />
                 <FilePanel files={files} dupOf={dupOf} busy={busy} onAdd={addFiles} onRemove={removeFile} usedBy={usedBy} />
               </aside>
             </div>

@@ -7,5 +7,6 @@
 | F1 | Tender load | "পরের feature F1 (Tender load) suru koro" |
 | F2 | Upload + duplicates | "next" (F2 from Plan.md: multi PDF upload, page count, reject non-PDF, remove, SHA-256 duplicates, limits) |
 | F3 | Match + expiry + status | "next" (F3 from Plan.md: match files to documents, expiry dates, live statuses, duplicate guard, summary ring, unit tests) |
+| F4 | Generate + download | "next" (F4 from Plan.md: Generate disabled with reasons, English cover page, docs in order, footer "<tender_id> | Page X of Y" not covering content, download <tender_id>_Package.pdf) |
 
 Most useful prompt (for README): _to be chosen at the end._

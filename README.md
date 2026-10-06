@@ -7,6 +7,7 @@ A frontend-only web app that helps office staff turn a set of PDF files into **o
 | **Name** | Md Abdul Quym Shanto |
 | **Registration Number** | VC027 |
 | **Live link (HTTPS)** | https://devfest-vc-027.vercel.app/ |
+| **Mirror (same commit)** | https://tenderpack027.netlify.app/ (some networks in Bangladesh cannot reach `*.vercel.app`) |
 | **Repository** | https://github.com/aqshanto/devfest-VC027 |
 | **License** | MIT (see [LICENSE](LICENSE)) |
 

@@ -34,6 +34,31 @@ async function readText(doc, maxPages = 2) {
   }
 }
 
+// Small JPEG of page 1 for the file list. Runs after upload, never blocks it.
+export async function makeThumb(bytes, width = 96) {
+  const task = pdfjs.getDocument({ data: bytes.slice() })
+  const timeout = new Promise((resolve) => setTimeout(() => resolve(null), 4000))
+  const result = await Promise.race([renderThumb(task, width), timeout])
+  task.destroy()
+  return result
+}
+
+async function renderThumb(task, width) {
+  try {
+    const doc = await task.promise
+    const page = await doc.getPage(1)
+    const base = page.getViewport({ scale: 1 })
+    const viewport = page.getViewport({ scale: width / base.width })
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.ceil(viewport.width)
+    canvas.height = Math.ceil(viewport.height)
+    await page.render({ canvas, canvasContext: canvas.getContext('2d'), viewport }).promise
+    return canvas.toDataURL('image/jpeg', 0.75)
+  } catch {
+    return null
+  }
+}
+
 // Read one File → { id, name, size, bytes, pages, hash, error }
 // error is an i18n key: 'notPdf' | 'damaged' | 'passwordPdf'
 export async function readFile(file) {

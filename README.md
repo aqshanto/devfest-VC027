@@ -70,6 +70,7 @@ Handy URL parameters: `?lang=bn|en`, `?theme=dark|light`, `?sample=1` (auto-load
 - **Export checklist (CSV):** the CSV button downloads `<tender_id>_Checklist.csv` with Order, Document, Mandatory, File name, Pages, Expiry date and Status, in the chosen language. It has a UTF-8 BOM so Excel shows Bangla correctly.
 - **Wrong-file warning:** when a file's name or text clearly belongs to another document (for example `trade_license_2025.pdf` matched to TIN Certificate), a soft amber warning appears. The status still follows Section 5 exactly.
 - **Handle bad files safely:** damaged, truncated, empty, fake (`.pdf` that is not a PDF) and password-protected files each show a clear bilingual message instead of crashing. All of these were tested.
+- **Page thumbnails:** every PDF in the file list shows a small picture of its first page (made in the background, so it never slows the upload). Hover to zoom. This helps with scans whose name means nothing, such as `scan_0042.pdf`.
 - **Preview before download:** after generating, the package can be viewed in an in-app PDF viewer or downloaded directly.
 
 ## Known issues

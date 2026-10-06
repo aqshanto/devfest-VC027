@@ -46,13 +46,22 @@ export default function FilePanel({ files, dupOf, busy, onAdd, onRemove, usedBy 
                       : 'border-slate-200/70 bg-white/70 dark:border-slate-700/60 dark:bg-slate-800/50'
                 }`}
               >
-                <span
-                  className={`grid size-9 shrink-0 place-items-center rounded-lg ${
-                    bad ? 'bg-rose-500 text-white' : 'bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-300'
-                  }`}
-                >
-                  {bad ? <FileX2 className="size-4" /> : <FileText className="size-4" />}
-                </span>
+                {f.thumb ? (
+                  <img
+                    src={f.thumb}
+                    alt={f.name}
+                    className="h-16 w-12 shrink-0 rounded-md border border-slate-200 bg-white object-cover object-top shadow-sm transition hover:scale-[2.5] hover:shadow-xl dark:border-slate-600"
+                    style={{ transformOrigin: 'left center' }}
+                  />
+                ) : (
+                  <span
+                    className={`grid size-9 shrink-0 place-items-center rounded-lg ${
+                      bad ? 'bg-rose-500 text-white' : 'bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-300'
+                    }`}
+                  >
+                    {bad ? <FileX2 className="size-4" /> : <FileText className="size-4" />}
+                  </span>
+                )}
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-semibold" title={f.name}>{f.name}</p>
                   {bad ? (

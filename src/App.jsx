@@ -18,7 +18,7 @@ import { buildPackage, downloadBytes } from './lib/package.js'
 import { useToast } from './components/Toasts.jsx'
 import { useT } from './i18n.js'
 import { parseTender, todayISO } from './lib/tender.js'
-import { MAX_BYTES, MAX_FILES, findDuplicates, readFile } from './lib/files.js'
+import { MAX_BYTES, MAX_FILES, findDuplicates, makeThumb, readFile } from './lib/files.js'
 
 const SAMPLE = '/sample/'
 const BASE_DEMO = {
@@ -145,6 +145,11 @@ export default function App() {
     }
     setFiles((xs) => [...xs, ...added])
     setBusy(false)
+    // thumbnails in the background
+    for (const f of added) {
+      if (f.error) continue
+      makeThumb(f.bytes).then((thumb) => thumb && setFiles((xs) => xs.map((x) => (x.id === f.id ? { ...x, thumb } : x))))
+    }
     if (overCount) toast('error', t('tooMany'))
     if (overSize) toast('error', t('tooBig'))
     const ok = added.filter((f) => !f.error).length

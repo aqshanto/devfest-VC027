@@ -68,9 +68,9 @@ Handy URL parameters: `?lang=bn|en`, `?theme=dark|light`, `?sample=1` (auto-load
 - **✨ Auto-match:** one click suggests matches from the file names. It uses keywords and synonyms from `title_en` (trade/licence, tin/tax, vat/bin, solvency/bank and so on), prefers the newer year (`_2026` over `_2025`) and the original over a `(1)` copy, never uses two duplicates, and fills only documents that are still empty. An **Undo** button restores the previous matches.
 - **Index page after the cover:** lists each document with its page range and the page where it starts, with dotted leaders. It is on by default and can be turned off with a checkbox. The cover table also shows the start pages.
 - **Export checklist (CSV):** the CSV button downloads `<tender_id>_Checklist.csv` with Order, Document, Mandatory, File name, Pages, Expiry date and Status, in the chosen language. It has a UTF-8 BOM so Excel shows Bangla correctly.
-- **Wrong-file warning:** when a file's name clearly belongs to another document (for example `trade_license_2025.pdf` matched to TIN Certificate), a soft amber warning appears. The status still follows Section 5 exactly.
+- **Wrong-file warning:** when a file's name or text clearly belongs to another document (for example `trade_license_2025.pdf` matched to TIN Certificate), a soft amber warning appears. The status still follows Section 5 exactly.
 - **Handle bad files safely:** damaged or password-protected PDFs show a clear bilingual message instead of crashing.
-- _(More bonus features are listed here as they are added.)_
+- **Preview before download:** after generating, the package can be viewed in an in-app PDF viewer or downloaded directly.
 
 ## Known issues
 
@@ -81,7 +81,7 @@ Handy URL parameters: `?lang=bn|en`, `?theme=dark|light`, `?sample=1` (auto-load
 
 ## AI tools used
 
-- **Claude Code (Claude Opus 5.5)**: planning, code generation, testing, git commits and README.
+- **Claude Code (Claude Opus 5.5)**: planning (`Plan.md`), code generation, testing, git commits and README. Every prompt is listed in [`Prompt.md`](Prompt.md) and in each commit message.
 
 ## Most useful prompt
 
@@ -91,7 +91,7 @@ This prompt, together with a written `Plan.md` that listed the exact status rule
 
 ## Tech
 
-Vite + React, Tailwind CSS v4, lucide-react icons, **pdf-lib** (merge, cover, footer), **pdfjs-dist** (page count and bad-file detection), Web Crypto SHA-256, Vitest. Everything runs in the browser. There is no backend and no stored secrets.
+Vite + React, Tailwind CSS v4, lucide-react icons, **pdf-lib** (merge, cover, footer), **pdfjs-dist** (page count, bad-file detection, Smart Read text), Web Crypto SHA-256, Vitest. Everything runs in the browser. There is no backend and no stored secrets.
 
 ## Screenshots
 

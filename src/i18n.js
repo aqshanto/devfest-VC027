@@ -224,6 +224,7 @@ export function I18nProvider({ children }) {
 
   useEffect(() => {
     document.documentElement.lang = lang
+    document.title = dict[lang].appName
     try { localStorage.setItem('lang', lang) } catch {}
   }, [lang])
 

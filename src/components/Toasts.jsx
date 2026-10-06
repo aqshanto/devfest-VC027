@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useState } from 'react'
 import { AlertTriangle, CheckCircle2, Info, X } from 'lucide-react'
+import { useT } from '../i18n.js'
 
 const Ctx = createContext(() => {})
 const STYLE = {
@@ -9,6 +10,7 @@ const STYLE = {
 }
 
 export function ToastProvider({ children }) {
+  const { t } = useT()
   const [items, setItems] = useState([])
   const close = (id) => setItems((xs) => xs.filter((x) => x.id !== id))
   const push = useCallback((type, msg) => {
@@ -27,7 +29,7 @@ export function ToastProvider({ children }) {
             <div key={id} className={`rise flex items-start gap-3 rounded-xl ${bg} p-3 text-sm text-white shadow-xl`}>
               <Icon className="mt-0.5 size-4 shrink-0" />
               <p className="flex-1">{msg}</p>
-              <button onClick={() => close(id)} className="cursor-pointer opacity-70 hover:opacity-100" aria-label="close">
+              <button onClick={() => close(id)} className="cursor-pointer opacity-70 hover:opacity-100" aria-label={t('close')}>
                 <X className="size-4" />
               </button>
             </div>

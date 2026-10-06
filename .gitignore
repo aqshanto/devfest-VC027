@@ -4,3 +4,5 @@ dist
 *.log
 .env*
 .claude
+CLAUDE.md
+agent.md

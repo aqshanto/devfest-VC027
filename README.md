@@ -63,6 +63,7 @@ Handy URL parameters: `?lang=bn|en`, `?theme=dark|light`, `?sample=1` (auto-load
 
 - **✨ Auto-match:** one click suggests matches from the file names. It uses keywords and synonyms from `title_en` (trade/licence, tin/tax, vat/bin, solvency/bank and so on), prefers the newer year (`_2026` over `_2025`) and the original over a `(1)` copy, never uses two duplicates, and fills only documents that are still empty. An **Undo** button restores the previous matches.
 - **Index page after the cover:** lists each document with its page range and the page where it starts, with dotted leaders. It is on by default and can be turned off with a checkbox. The cover table also shows the start pages.
+- **Export checklist (CSV):** the CSV button downloads `<tender_id>_Checklist.csv` with Order, Document, Mandatory, File name, Pages, Expiry date and Status, in the chosen language. It has a UTF-8 BOM so Excel shows Bangla correctly.
 - **Wrong-file warning:** when a file's name clearly belongs to another document (for example `trade_license_2025.pdf` matched to TIN Certificate), a soft amber warning appears. The status still follows Section 5 exactly.
 - **Handle bad files safely:** damaged or password-protected PDFs show a clear bilingual message instead of crashing.
 - _(More bonus features are listed here as they are added.)_

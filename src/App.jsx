@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ShieldCheck, Sparkles, Undo2, WandSparkles } from 'lucide-react'
+import { FileSpreadsheet, ShieldCheck, Sparkles, Undo2, WandSparkles } from 'lucide-react'
+import { checklistCsv, downloadText } from './lib/csv.js'
 import { autoMatch } from './lib/automatch.js'
 import TopBar from './components/TopBar.jsx'
 import Stepper from './components/Stepper.jsx'
@@ -76,6 +77,13 @@ export default function App() {
     setExpiry(undoMatches.expiry)
     setUndoMatches(null)
   }
+
+  // Bonus: checklist CSV export
+  const exportCsv = () =>
+    downloadText(
+      checklistCsv({ requirements: data.requirements, matches, expiry, files, statuses, lang, t }),
+      `${data.tender.tender_id}_Checklist.csv`,
+    )
 
   const setExpiryFor = (reqId, date) => setExpiry((e) => ({ ...e, [reqId]: date }))
 
@@ -223,6 +231,10 @@ export default function App() {
                   requirements={data.requirements}
                   actions={
                     <>
+                      <button className="btn-ghost px-3 py-1.5 text-xs" onClick={exportCsv} title={t('exportCsv')}>
+                        <FileSpreadsheet className="size-4 text-emerald-600" />
+                        <span className="hidden sm:inline">CSV</span>
+                      </button>
                       {undoMatches && (
                         <button className="btn-ghost px-3 py-1.5 text-xs" onClick={undoAutoMatch} title={t('undo')}>
                           <Undo2 className="size-4" />

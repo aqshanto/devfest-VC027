@@ -25,3 +25,14 @@ it('auto-matches the sample pack by file name', () => {
   expect(m.R06).toBeUndefined() // optional, no file
   expect(Object.values(m).filter((v) => v?.startsWith('experience_cert'))).toHaveLength(1)
 })
+
+it('warns when a file name points to another document', async () => {
+  const { looksLikeOther } = await import('./automatch.js')
+  const { requirements } = parseTender(readFileSync('public/sample/requirements.json', 'utf8'))
+  const R = (id) => requirements.find((r) => r.id === id)
+  expect(looksLikeOther(R('R02'), 'trade_license_2025.pdf', requirements)?.id).toBe('R01')
+  expect(looksLikeOther(R('R01'), 'trade_license_2025.pdf', requirements)).toBe(null)
+  expect(looksLikeOther(R('R10'), 'scan_0042.pdf', requirements)).toBe(null)
+  expect(looksLikeOther(R('R09'), '01_financial_proposal.pdf', requirements)).toBe(null)
+  expect(looksLikeOther(R('R05'), 'experience_cert (1).pdf', requirements)).toBe(null)
+})

@@ -65,3 +65,17 @@ export function autoMatch(requirements, files, matches) {
   }
   return out
 }
+
+// Soft check (does not change the Section 5 status): if the file name clearly points
+// to a different document than the one it is matched to, return that document.
+export function looksLikeOther(req, fileName, requirements) {
+  const own = scoreName(req, fileName)
+  let best = null
+  let bestScore = 0.9
+  for (const r of requirements) {
+    if (r.id === req.id) continue
+    const s = scoreName(r, fileName)
+    if (s > bestScore) [best, bestScore] = [r, s]
+  }
+  return best && Math.floor(bestScore) > Math.floor(own) ? best : null
+}

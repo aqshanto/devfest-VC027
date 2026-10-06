@@ -10,5 +10,6 @@
 | F4 | Generate + download | "next" (F4 from Plan.md: Generate disabled with reasons, English cover page, docs in order, footer "<tender_id> | Page X of Y" not covering content, download <tender_id>_Package.pdf) |
 | F5 | Deliverables | "next" (F5: screenshots with headless Chrome into screenshots/, output PDF, full README per Rulebook 9.3) |
 | B1 | Auto-match | "next" (Bonus 1: auto-match files to documents from file names, with undo) |
+| B1b | Wrong-file warning | "ami jokhon TIN certificate e onno kono document dissilam eta seta ke thik ase dhore nissilo. eta ki ekta problem na ?" |
 
 Most useful prompt (for README): _to be chosen at the end._

@@ -62,6 +62,7 @@ Handy URL parameters: `?lang=bn|en`, `?theme=dark|light`, `?sample=1` (auto-load
 ## Bonus features
 
 - **✨ Auto-match:** one click suggests matches from the file names. It uses keywords and synonyms from `title_en` (trade/licence, tin/tax, vat/bin, solvency/bank and so on), prefers the newer year (`_2026` over `_2025`) and the original over a `(1)` copy, never uses two duplicates, and fills only documents that are still empty. An **Undo** button restores the previous matches.
+- **Wrong-file warning:** when a file's name clearly belongs to another document (for example `trade_license_2025.pdf` matched to TIN Certificate), a soft amber warning appears. The status still follows Section 5 exactly.
 - **Handle bad files safely:** damaged or password-protected PDFs show a clear bilingual message instead of crashing.
 - _(More bonus features are listed here as they are added.)_
 

@@ -241,7 +241,7 @@ export default function App() {
                   }
                   renderRight={(r) => <StatusChip status={statuses[r.id]} />}
                   renderBelow={(r) => (
-                    <MatchControl req={r} files={files} matches={matches} expiry={expiry} onMatch={setMatch} onExpiry={setExpiryFor} />
+                    <MatchControl req={r} requirements={data.requirements} files={files} matches={matches} expiry={expiry} onMatch={setMatch} onExpiry={setExpiryFor} />
                   )}
                 />
               </div>

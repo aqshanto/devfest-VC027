@@ -18,6 +18,19 @@ import { parseTender, todayISO } from './lib/tender.js'
 import { MAX_BYTES, MAX_FILES, findDuplicates, readFile } from './lib/files.js'
 
 const SAMPLE = '/sample/'
+const BASE_DEMO = {
+  R02: ['03_tin_certificate.pdf'],
+  R03: ['04_vat_certificate.pdf'],
+  R05: ['experience_cert.pdf'],
+  R08: ['02_technical_proposal.pdf'],
+  R09: ['01_financial_proposal.pdf'],
+  R10: ['scan_0042.pdf'],
+}
+const DEMOS = {
+  problems: { ...BASE_DEMO, R01: ['trade_license_2025.pdf', '2025-06-30'], R04: ['bank_solvency.pdf'], R10: undefined },
+  ready: { ...BASE_DEMO, R01: ['trade_license_2026.pdf', '2027-06-30'], R04: ['bank_solvency.pdf', '2026-12-31'] },
+}
+DEMOS.problems = Object.fromEntries(Object.entries(DEMOS.problems).filter(([, v]) => v))
 
 export default function App() {
   const { t, lang, num } = useT()
@@ -95,6 +108,7 @@ export default function App() {
     if (overSize) toast('error', t('tooBig'))
     const ok = added.filter((f) => !f.error).length
     if (ok) toast('success', t('filesAdded', { n: ok }))
+    return added
   }
 
   const removeFile = (id) => {
@@ -129,12 +143,24 @@ export default function App() {
     const names = await (await fetch(SAMPLE + 'manifest.json')).json()
     const list = await Promise.all(
       names.map(async (n) => {
-        const blob = await (await fetch(SAMPLE + 'documents/' + encodeURIComponent(n))).blob()
-        return new File([blob], n, { type: n.endsWith('.pdf') ? 'application/pdf' : 'image/png' })
+        const buf = await (await fetch(SAMPLE + 'documents/' + encodeURIComponent(n))).arrayBuffer()
+        return new File([buf], n, { type: n.endsWith('.pdf') ? 'application/pdf' : 'image/png' })
       }),
     )
     setFiles([])
-    await addFiles(list)
+    const added = await addFiles(list)
+    // ?demo=problems | ready pre-fills matches (used for README screenshots)
+    const demo = DEMOS[new URLSearchParams(location.search).get('demo')]
+    if (demo) {
+      const m = {}
+      const e = {}
+      for (const [rid, [name, date]] of Object.entries(demo)) {
+        m[rid] = added.find((f) => f.name === name && !f.error)?.id
+        if (date) e[rid] = date
+      }
+      setMatches(m)
+      setExpiry(e)
+    }
   }
 
   // ?sample=1 auto-loads the sample pack (used for screenshots)

@@ -1,14 +1,15 @@
-import { AlertTriangle, CalendarDays, FileText, Undo2 } from 'lucide-react'
+import { AlertTriangle, CalendarDays, FileText, ScanSearch, Undo2 } from 'lucide-react'
 import { looksLikeOther } from '../lib/automatch.js'
 import { useT } from '../i18n.js'
 import { matchBlockReason } from '../lib/status.js'
 
-export default function MatchControl({ req, requirements, files, matches, expiry, onMatch, onExpiry }) {
+export default function MatchControl({ req, requirements, files, matches, expiry, expiryAuto = {}, onMatch, onExpiry }) {
   const { t, lang } = useT()
   const fileId = matches[req.id] || ''
   const usable = files.filter((f) => !f.error)
   const file = files.find((f) => f.id === fileId)
-  const other = file && looksLikeOther(req, file.name, requirements)
+  const other = file && looksLikeOther(req, file, requirements)
+  const found = req.has_expiry && file?.detectedExpiry
 
   return (
     <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-slate-200/70 pt-3 dark:border-slate-700/60">
@@ -50,6 +51,24 @@ export default function MatchControl({ req, requirements, files, matches, expiry
             aria-label={t('expiryDate')}
           />
         </label>
+      )}
+
+      {found && expiryAuto[req.id] && expiry[req.id] === found && (
+        <span className="inline-flex items-center gap-1 rounded-full bg-sky-100 px-2 py-1 text-[11px] font-semibold text-sky-700 dark:bg-sky-500/15 dark:text-sky-300" title={t('autoDateHint')}>
+          <ScanSearch className="size-3.5" />
+          {t('autoDate')}
+        </span>
+      )}
+
+      {found && !expiry[req.id] && (
+        <button
+          onClick={() => onExpiry(req.id, found, true)}
+          className="inline-flex cursor-pointer items-center gap-1 rounded-full bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white shadow-md shadow-sky-600/30 transition hover:bg-sky-700"
+          title={t('autoDateHint')}
+        >
+          <ScanSearch className="size-3.5" />
+          {t('useFound', { date: found })}
+        </button>
       )}
 
       {fileId && (

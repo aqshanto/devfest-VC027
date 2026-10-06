@@ -44,6 +44,7 @@ export default function App() {
   const dupOf = useMemo(() => findDuplicates(files), [files])
   const [matches, setMatches] = useState({}) // reqId → fileId
   const [expiry, setExpiry] = useState({}) // reqId → YYYY-MM-DD
+  const [expiryAuto, setExpiryAuto] = useState({}) // reqId → true when the date came from Smart Read
 
   const statuses = useMemo(
     () => (data ? getAllStatuses(data.requirements, matches, expiry, data.tender.submission_deadline) : {}),
@@ -62,20 +63,30 @@ export default function App() {
   const setMatch = (reqId, fileId) => {
     setMatches((m) => ({ ...m, [reqId]: fileId }))
     setExpiry((e) => ({ ...e, [reqId]: '' })) // expiry belongs to the chosen file
+    setExpiryAuto((a) => ({ ...a, [reqId]: false }))
   }
   // Bonus: auto-match by file name (only fills empty documents; can be undone)
   const [undoMatches, setUndoMatches] = useState(null)
   const runAutoMatch = () => {
-    const next = autoMatch(data.requirements, files, matches)
+    const next = autoMatch(data.requirements, files, matches, data.tender.submission_deadline)
     const changed = Object.keys(next).filter((k) => next[k] !== matches[k])
-    setUndoMatches({ matches, expiry })
+    const dates = {}
+    for (const k of changed) {
+      const r = data.requirements.find((x) => x.id === k)
+      const f = files.find((x) => x.id === next[k])
+      dates[k] = (r.has_expiry && f?.detectedExpiry) || ''
+    }
+    setUndoMatches({ matches, expiry, expiryAuto })
     setMatches(next)
-    setExpiry((e) => ({ ...e, ...Object.fromEntries(changed.map((k) => [k, ''])) }))
-    toast(changed.length ? 'success' : 'info', t('autoMatched', { n: changed.length }))
+    setExpiry((e) => ({ ...e, ...dates }))
+    setExpiryAuto((a) => ({ ...a, ...Object.fromEntries(changed.map((k) => [k, !!dates[k]])) }))
+    const found = Object.values(dates).filter(Boolean).length
+    toast(changed.length ? 'success' : 'info', t('autoMatched', { n: changed.length }) + (found ? ' · ' + t('datesFound', { n: found }) : ''))
   }
   const undoAutoMatch = () => {
     setMatches(undoMatches.matches)
     setExpiry(undoMatches.expiry)
+    setExpiryAuto(undoMatches.expiryAuto)
     setUndoMatches(null)
   }
 
@@ -86,7 +97,10 @@ export default function App() {
       `${data.tender.tender_id}_Checklist.csv`,
     )
 
-  const setExpiryFor = (reqId, date) => setExpiry((e) => ({ ...e, [reqId]: date }))
+  const setExpiryFor = (reqId, date, auto = false) => {
+    setExpiry((e) => ({ ...e, [reqId]: date }))
+    setExpiryAuto((a) => ({ ...a, [reqId]: auto }))
+  }
 
   // Generate (task 4.7 / 4.8)
   const [result, setResult] = useState(null) // { bytes, totalPages }
@@ -148,6 +162,7 @@ export default function App() {
     setMatches({})
     setExpiry({})
     setUndoMatches(null)
+    setExpiryAuto({})
   }
 
   const loadTenderText = (text) => {
@@ -156,6 +171,7 @@ export default function App() {
       setMatches({})
       setExpiry({})
       setUndoMatches(null)
+      setExpiryAuto({})
       toast('success', t('tenderLoaded'))
       return true
     } catch (e) {
@@ -255,7 +271,7 @@ export default function App() {
                   }
                   renderRight={(r) => <StatusChip status={statuses[r.id]} />}
                   renderBelow={(r) => (
-                    <MatchControl req={r} requirements={data.requirements} files={files} matches={matches} expiry={expiry} onMatch={setMatch} onExpiry={setExpiryFor} />
+                    <MatchControl req={r} requirements={data.requirements} files={files} matches={matches} expiry={expiry} expiryAuto={expiryAuto} onMatch={setMatch} onExpiry={setExpiryFor} />
                   )}
                 />
               </div>
@@ -272,7 +288,7 @@ export default function App() {
                   onDownload={() => downloadBytes(result.bytes, packageName)}
                   onPreview={() => setShowPreview(true)}
                 />
-                <FilePanel files={files} dupOf={dupOf} busy={busy} onAdd={addFiles} onRemove={removeFile} usedBy={usedBy} />
+                <FilePanel files={files} dupOf={dupOf} busy={busy} onAdd={addFiles} onRemove={removeFile} usedBy={usedBy} requirements={data.requirements} deadline={data.tender.submission_deadline} />
               </aside>
             </div>
           </>

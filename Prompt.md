@@ -14,5 +14,6 @@
 | B2 | Index page | "next" (Bonus 2: index page after the cover showing the page number where each document starts) |
 | B3 | CSV export | "ami save/reopen chassi na. sudhu CSV checklist export feature ta add koro" |
 | UX | Preview + Download | "generate package option e click korlei duita option show kore ekta holo preview, arekta download ... ar generate package er onno kono icon use kora jabe na ?" |
+| B4 | Smart Read | "ami chassi 1 number ta korte" (Smart Read: read PDF text to detect document type and expiry date, used by auto-match and one-click date suggestions) |
 
 Most useful prompt (for README): _to be chosen at the end._

@@ -42,8 +42,44 @@ export function scoreName(req, fileName) {
   return score + year / 1e6 - fileName.length / 1e9
 }
 
+const norm = (s) => ` ${words(s).join(' ')} `
+
+// Smart Read: score from the PDF text. A title near the top (heading) counts most.
+export function scoreText(req, text) {
+  if (!text) return 0
+  const all = norm(text)
+  const head = norm(text.slice(0, 700))
+  const phrase = norm(req.title_en)
+  if (phrase.trim().length < 3) return 0
+  if (head.includes(phrase)) return 3
+  let score = all.includes(phrase) ? 1 : 0
+  const keys = words(req.title_en).filter((k) => !GENERIC.has(k))
+  const hits = keys.filter((k) => [k, ...(SYNONYMS[k] || [])].some((o) => head.includes(` ${o} `)))
+  if (keys.length && hits.length === keys.length) score += 1.5
+  return score
+}
+
+// Total score of a file for a document: file name + text, and for documents with
+// an expiry date prefer a file whose detected date is still valid.
+export function scoreFile(req, file, deadline) {
+  let s = scoreName(req, file.name) + scoreText(req, file.text)
+  if (req.has_expiry && file.detectedExpiry && deadline && s >= 0.9) s += file.detectedExpiry >= deadline ? 0.5 : -0.5
+  return s
+}
+
+// Best-guess document for a file (shown in the file list).
+export function guessReq(file, requirements, deadline) {
+  let best = null
+  let bestScore = 0.9
+  for (const r of requirements) {
+    const s = scoreFile(r, file, deadline)
+    if (s > bestScore) [best, bestScore] = [r, s]
+  }
+  return best
+}
+
 // Returns a new matches object; existing matches are kept, only empty documents are filled.
-export function autoMatch(requirements, files, matches) {
+export function autoMatch(requirements, files, matches, deadline) {
   const usable = files.filter((f) => !f.error)
   const takenFiles = new Set(Object.values(matches).filter(Boolean))
   const takenHashes = new Set(usable.filter((f) => takenFiles.has(f.id)).map((f) => f.hash))
@@ -51,7 +87,7 @@ export function autoMatch(requirements, files, matches) {
   for (const r of requirements) {
     if (matches[r.id]) continue
     for (const f of usable) {
-      const s = scoreName(r, f.name)
+      const s = scoreFile(r, f, deadline)
       if (s >= 0.9) pairs.push([s, r.id, f])
     }
   }
@@ -66,15 +102,16 @@ export function autoMatch(requirements, files, matches) {
   return out
 }
 
-// Soft check (does not change the Section 5 status): if the file name clearly points
+// Soft check (does not change the Section 5 status): if the file name/text clearly points
 // to a different document than the one it is matched to, return that document.
-export function looksLikeOther(req, fileName, requirements) {
-  const own = scoreName(req, fileName)
+export function looksLikeOther(req, file, requirements) {
+  const score = (r) => scoreName(r, file.name) + scoreText(r, file.text)
+  const own = score(req)
   let best = null
   let bestScore = 0.9
   for (const r of requirements) {
     if (r.id === req.id) continue
-    const s = scoreName(r, fileName)
+    const s = score(r)
     if (s > bestScore) [best, bestScore] = [r, s]
   }
   return best && Math.floor(bestScore) > Math.floor(own) ? best : null

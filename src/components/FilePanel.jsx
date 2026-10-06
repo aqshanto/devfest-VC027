@@ -1,11 +1,12 @@
-import { Copy, FileText, FileX2, Files, Link2, Loader2, Trash2 } from 'lucide-react'
+import { CalendarClock, Copy, FileText, FileX2, Files, Link2, Loader2, ScanSearch, Trash2 } from 'lucide-react'
+import { guessReq } from '../lib/automatch.js'
 import { useT } from '../i18n.js'
 import { formatSize } from '../lib/files.js'
 import DropZone from './DropZone.jsx'
 
 // usedBy: fileId → requirement label (filled in F3)
-export default function FilePanel({ files, dupOf, busy, onAdd, onRemove, usedBy = {} }) {
-  const { t, num } = useT()
+export default function FilePanel({ files, dupOf, busy, onAdd, onRemove, usedBy = {}, requirements = [], deadline }) {
+  const { t, num, lang } = useT()
   const valid = files.filter((f) => !f.error).length
 
   return (
@@ -33,6 +34,7 @@ export default function FilePanel({ files, dupOf, busy, onAdd, onRemove, usedBy 
           {files.map((f) => {
             const bad = !!f.error
             const dup = dupOf[f.id]
+            const guess = !f.error && !usedBy[f.id] ? guessReq(f, requirements, deadline) : null
             return (
               <li
                 key={f.id}
@@ -64,6 +66,25 @@ export default function FilePanel({ files, dupOf, busy, onAdd, onRemove, usedBy 
                         <span className="inline-flex items-center gap-1 rounded-full bg-violet-600 px-2 py-0.5 font-semibold text-white" title={t('sameAs', { name: dup })}>
                           <Copy className="size-3" />
                           {t('duplicate')}
+                        </span>
+                      )}
+                      {f.detectedExpiry && (
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-semibold ${
+                            deadline && f.detectedExpiry < deadline
+                              ? 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300'
+                              : 'bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300'
+                          }`}
+                          title={t('autoDateHint')}
+                        >
+                          <CalendarClock className="size-3" />
+                          {num(f.detectedExpiry)}
+                        </span>
+                      )}
+                      {guess && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2 py-0.5 font-semibold text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300" title={t('guessHint')}>
+                          <ScanSearch className="size-3" />
+                          {lang === 'bn' ? guess.title_bn : guess.title_en}
                         </span>
                       )}
                       {usedBy[f.id] && (

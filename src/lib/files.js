@@ -1,5 +1,6 @@
 import * as pdfjs from 'pdfjs-dist'
 import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
+import { detectExpiry } from './expiry.js'
 
 pdfjs.GlobalWorkerOptions.workerSrc = workerUrl
 
@@ -19,6 +20,20 @@ const isPdfHeader = (bytes) => {
   return head.includes('%PDF-')
 }
 
+// Smart Read: text of the first pages (scanned images have no text → '')
+async function readText(doc, maxPages = 2) {
+  try {
+    let out = ''
+    for (let i = 1; i <= Math.min(maxPages, doc.numPages); i++) {
+      const content = await (await doc.getPage(i)).getTextContent()
+      out += content.items.map((it) => it.str).join(' ') + ' '
+    }
+    return out.replace(/\s+/g, ' ').trim().slice(0, 6000)
+  } catch {
+    return ''
+  }
+}
+
 // Read one File → { id, name, size, bytes, pages, hash, error }
 // error is an i18n key: 'notPdf' | 'damaged' | 'passwordPdf'
 export async function readFile(file) {
@@ -30,9 +45,11 @@ export async function readFile(file) {
   try {
     // pdf.js transfers the buffer to its worker, so give it a copy
     const task = pdfjs.getDocument({ data: bytes.slice() })
-    const pages = (await task.promise).numPages
+    const doc = await task.promise
+    const pages = doc.numPages
+    const text = await readText(doc)
     await task.destroy()
-    return { ...base, bytes, pages, hash: await sha256(bytes) }
+    return { ...base, bytes, pages, hash: await sha256(bytes), text, detectedExpiry: detectExpiry(text) }
   } catch (e) {
     return { ...base, error: e?.name === 'PasswordException' ? 'passwordPdf' : 'damaged' }
   }

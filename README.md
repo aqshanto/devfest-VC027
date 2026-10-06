@@ -61,6 +61,10 @@ Handy URL parameters: `?lang=bn|en`, `?theme=dark|light`, `?sample=1` (auto-load
 
 ## Bonus features
 
+- **🔍 Smart Read (PDF text):** pdf.js reads the text of the first pages of every PDF, all inside the browser.
+  - **Document detection by content:** it recognises the document even when the file name means nothing (tested with the sample files renamed to `file_0.pdf` and so on). The best guess appears as a chip in the file list.
+  - **Expiry date detection:** it finds dates after "Valid until / Expiry / Validity" in formats such as `2027-06-30`, `30 June 2027`, `June 30, 2027` and `30/06/2027`. The date shows as a chip on the file (red if it is before the deadline). On a manual match, a one-click **Use <date>** button appears. Dates filled by Auto-match get a "Read from PDF" badge so the user can check them. Without user action, the status still follows Section 5 (a manual match shows *Expiry date needed* until a date is set).
+  - When two files fit the same document, Auto-match prefers the one that is still valid (so `trade_license_2026` wins over the expired 2025 one).
 - **✨ Auto-match:** one click suggests matches from the file names. It uses keywords and synonyms from `title_en` (trade/licence, tin/tax, vat/bin, solvency/bank and so on), prefers the newer year (`_2026` over `_2025`) and the original over a `(1)` copy, never uses two duplicates, and fills only documents that are still empty. An **Undo** button restores the previous matches.
 - **Index page after the cover:** lists each document with its page range and the page where it starts, with dotted leaders. It is on by default and can be turned off with a checkbox. The cover table also shows the start pages.
 - **Export checklist (CSV):** the CSV button downloads `<tender_id>_Checklist.csv` with Order, Document, Mandatory, File name, Pages, Expiry date and Status, in the chosen language. It has a UTF-8 BOM so Excel shows Bangla correctly.

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ShieldCheck, Sparkles } from 'lucide-react'
+import { ShieldCheck, Sparkles, Undo2, WandSparkles } from 'lucide-react'
+import { autoMatch } from './lib/automatch.js'
 import TopBar from './components/TopBar.jsx'
 import Stepper from './components/Stepper.jsx'
 import DropZone from './components/DropZone.jsx'
@@ -60,6 +61,22 @@ export default function App() {
     setMatches((m) => ({ ...m, [reqId]: fileId }))
     setExpiry((e) => ({ ...e, [reqId]: '' })) // expiry belongs to the chosen file
   }
+  // Bonus: auto-match by file name (only fills empty documents; can be undone)
+  const [undoMatches, setUndoMatches] = useState(null)
+  const runAutoMatch = () => {
+    const next = autoMatch(data.requirements, files, matches)
+    const changed = Object.keys(next).filter((k) => next[k] !== matches[k])
+    setUndoMatches({ matches, expiry })
+    setMatches(next)
+    setExpiry((e) => ({ ...e, ...Object.fromEntries(changed.map((k) => [k, ''])) }))
+    toast(changed.length ? 'success' : 'info', t('autoMatched', { n: changed.length }))
+  }
+  const undoAutoMatch = () => {
+    setMatches(undoMatches.matches)
+    setExpiry(undoMatches.expiry)
+    setUndoMatches(null)
+  }
+
   const setExpiryFor = (reqId, date) => setExpiry((e) => ({ ...e, [reqId]: date }))
 
   // Generate (task 4.7 / 4.8)
@@ -120,6 +137,7 @@ export default function App() {
     setData(null)
     setMatches({})
     setExpiry({})
+    setUndoMatches(null)
   }
 
   const loadTenderText = (text) => {
@@ -127,6 +145,7 @@ export default function App() {
       setData(parseTender(text))
       setMatches({})
       setExpiry({})
+      setUndoMatches(null)
       toast('success', t('tenderLoaded'))
       return true
     } catch (e) {
@@ -201,6 +220,25 @@ export default function App() {
               <div className="lg:col-span-2">
                 <RequirementList
                   requirements={data.requirements}
+                  actions={
+                    <>
+                      {undoMatches && (
+                        <button className="btn-ghost px-3 py-1.5 text-xs" onClick={undoAutoMatch} title={t('undo')}>
+                          <Undo2 className="size-4" />
+                          <span className="hidden sm:inline">{t('undo')}</span>
+                        </button>
+                      )}
+                      <button
+                        className="btn-primary px-3 py-1.5 text-xs"
+                        onClick={runAutoMatch}
+                        disabled={!files.some((f) => !f.error)}
+                        title={t('autoMatchHint')}
+                      >
+                        <WandSparkles className="size-4" />
+                        {t('autoMatch')}
+                      </button>
+                    </>
+                  }
                   renderRight={(r) => <StatusChip status={statuses[r.id]} />}
                   renderBelow={(r) => (
                     <MatchControl req={r} files={files} matches={matches} expiry={expiry} onMatch={setMatch} onExpiry={setExpiryFor} />

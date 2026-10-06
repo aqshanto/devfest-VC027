@@ -80,6 +80,8 @@ export const dict = {
     // bonus
     autoMatch: 'Auto-match',
     autoMatched: '{n} matches suggested',
+    autoMatchHint: 'Suggest matches from file names. Please check them.',
+    undo: 'Undo',
     exportCsv: 'Export checklist (CSV)',
     saveProject: 'Save project',
     openProject: 'Open project',
@@ -166,6 +168,8 @@ export const dict = {
     genError: 'প্যাকেজ তৈরি করা যায়নি।',
     autoMatch: 'স্বয়ংক্রিয় মিলান',
     autoMatched: '{n}টি মিল প্রস্তাব করা হয়েছে',
+    autoMatchHint: 'ফাইলের নাম দেখে মিল প্রস্তাব করে। একবার যাচাই করে নিন।',
+    undo: 'ফিরিয়ে নিন',
     exportCsv: 'চেকলিস্ট এক্সপোর্ট (CSV)',
     saveProject: 'প্রজেক্ট সংরক্ষণ',
     openProject: 'প্রজেক্ট খুলুন',

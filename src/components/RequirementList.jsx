@@ -1,7 +1,7 @@
 import { ListChecks, Timer } from 'lucide-react'
 import { useT } from '../i18n.js'
 
-export default function RequirementList({ requirements, renderRight, renderBelow }) {
+export default function RequirementList({ requirements, renderRight, renderBelow, actions }) {
   const { t, num, lang } = useT()
   return (
     <section className="glass rise p-4 sm:p-5">
@@ -11,6 +11,7 @@ export default function RequirementList({ requirements, renderRight, renderBelow
         <span className="rounded-full bg-violet-100 px-2 py-0.5 text-xs text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">
           {num(requirements.length)}
         </span>
+        <span className="ml-auto flex gap-2">{actions}</span>
       </h3>
       <ul className="space-y-2">
         {requirements.map((r) => (

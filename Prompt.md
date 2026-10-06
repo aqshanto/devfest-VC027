@@ -18,5 +18,6 @@
 | B5 | Thumbnails | "tmi add koro" (page-1 thumbnails in the file list) |
 | B6 | Bangla on PDF | "next" (Bangla text shown correctly on the PDF cover/index page) |
 | B7 | Seal / signature | "next" (Bonus: seal or signature - user uploads a PNG image and places it on chosen pages) |
+| B8 | Save & reopen | "as save and reopen feature is in the official page then lets add this too. and check the gitignore." |
 
 Most useful prompt (for README): _to be chosen at the end._

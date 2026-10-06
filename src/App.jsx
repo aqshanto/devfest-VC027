@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { FileSpreadsheet, ShieldCheck, Sparkles, Undo2, WandSparkles } from 'lucide-react'
+import { FileSpreadsheet, FolderOpen, ShieldCheck, Sparkles, Undo2, WandSparkles } from 'lucide-react'
 import { checklistCsv, downloadText } from './lib/csv.js'
+import { exportProject, importProject } from './lib/project.js'
 import { autoMatch } from './lib/automatch.js'
 import TopBar from './components/TopBar.jsx'
 import Stepper from './components/Stepper.jsx'
@@ -194,7 +195,42 @@ export default function App() {
     }
   }
 
-  const loadJsonFile = async ([file]) => loadTenderText(await file.text())
+  // requirements.json or a saved project file - both are .json
+  const loadJsonFile = async ([file]) => {
+    const text = await file.text()
+    if (text.includes('"tender-package-project"')) return openProjectText(text)
+    return loadTenderText(text)
+  }
+
+  // Bonus: save & reopen (project file with PDFs inside, never leaves the computer)
+  const saveProject = () => {
+    downloadText(
+      exportProject({ data, files, matches, expiry, expiryAuto, withIndex }),
+      `${data.tender.tender_id}_Project.json`,
+      'application/json',
+    )
+    toast('success', t('projectSaved'))
+  }
+  const openProjectText = (text) => {
+    try {
+      const p = importProject(text)
+      setData(p.data)
+      setFiles(p.files)
+      setMatches(p.matches)
+      setExpiry(p.expiry)
+      setExpiryAuto(p.expiryAuto)
+      setWithIndex(p.withIndex)
+      setUndoMatches(null)
+      toast('success', t('projectOpened'))
+      for (const f of p.files) {
+        if (f.error || !f.bytes) continue
+        makeThumb(f.bytes).then((thumb) => thumb && setFiles((xs) => xs.map((x) => (x.id === f.id ? { ...x, thumb } : x))))
+      }
+    } catch {
+      toast('error', t('badProject'))
+    }
+  }
+  const openProjectFile = async ([file]) => openProjectText(await file.text())
 
   const loadSample = async () => {
     const res = await fetch(SAMPLE + 'requirements.json')
@@ -250,11 +286,16 @@ export default function App() {
                 <Sparkles className="size-4 text-fuchsia-500" />
                 {t('trySample')}
               </button>
+              <label className="btn-ghost ml-2 cursor-pointer">
+                <FolderOpen className="size-4 text-indigo-500" />
+                {t('openProject')}
+                <input type="file" accept=".json,application/json" hidden onChange={(e) => { e.target.files[0] && openProjectFile([e.target.files[0]]); e.target.value = '' }} />
+              </label>
             </div>
           </section>
         ) : (
           <>
-            <TenderCard tender={data.tender} onChange={resetTender} />
+            <TenderCard tender={data.tender} onChange={resetTender} onSave={saveProject} />
             <SummaryBar statuses={statuses} />
             <div className="grid gap-6 lg:grid-cols-3">
               <div className="lg:col-span-2">

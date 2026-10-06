@@ -1,8 +1,8 @@
-import { Building2, CalendarClock, Hash, RefreshCw, Briefcase, FileText } from 'lucide-react'
+import { Building2, CalendarClock, Hash, RefreshCw, Briefcase, FileText, Save } from 'lucide-react'
 import { useT } from '../i18n.js'
 import { daysUntil } from '../lib/tender.js'
 
-export default function TenderCard({ tender, onChange }) {
+export default function TenderCard({ tender, onChange, onSave }) {
   const { t, num } = useT()
   const left = daysUntil(tender.submission_deadline)
   const chip =
@@ -29,6 +29,10 @@ export default function TenderCard({ tender, onChange }) {
           <h2 className="text-xl font-extrabold leading-tight sm:text-2xl">{tender.title || tender.tender_id}</h2>
         </div>
         <span className={`rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-white/20 ${chip[1]}`}>{chip[0]}</span>
+        <button onClick={onSave} className="btn bg-white/15 px-3 text-white ring-1 ring-white/25 hover:bg-white/25" title={t('saveProject')}>
+          <Save className="size-4" />
+          <span className="hidden sm:inline">{t('saveProject')}</span>
+        </button>
         <button onClick={onChange} className="btn bg-white/15 px-3 text-white ring-1 ring-white/25 hover:bg-white/25" title={t('changeTender')}>
           <RefreshCw className="size-4" />
           <span className="hidden sm:inline">{t('changeTender')}</span>

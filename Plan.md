@@ -81,7 +81,7 @@ Frontend-only web app: load `requirements.json` + many PDFs → match → check 
 1. **Auto-match** — "✨ Auto-match" button: score file name vs `title_en` keywords (e.g. trade, tin, vat, solvency, experience, technical, financial, declaration); prefers non-expired, skips duplicates; user can undo.
 2. **Bad files safe** — finish edge cases from F2 (password/damaged).
 3. **Index page** after cover: document → start page.
-4. ~~**Save & reopen**~~ (skipped by user decision) — autosave matches/expiry to `localStorage`; export/import project `.json` (files re-attached by hash).
+4. **Save & reopen** — project file export/import (done) — autosave matches/expiry to `localStorage`; export/import project `.json` (files re-attached by hash).
 5. **Export checklist CSV** — document, file name, pages, expiry date, status (UTF-8 BOM for Bangla in Excel).
 6. **Bangla on cover/index** — render Bangla lines via canvas → PNG embed (correct shaping).
 7. **Seal/signature** — upload PNG, choose pages (all / last of each doc / custom), position corner.

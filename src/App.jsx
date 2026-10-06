@@ -1,13 +1,15 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ShieldCheck, Sparkles } from 'lucide-react'
 import TopBar from './components/TopBar.jsx'
 import Stepper from './components/Stepper.jsx'
 import DropZone from './components/DropZone.jsx'
 import TenderCard from './components/TenderCard.jsx'
 import RequirementList from './components/RequirementList.jsx'
+import FilePanel from './components/FilePanel.jsx'
 import { useToast } from './components/Toasts.jsx'
 import { useT } from './i18n.js'
 import { parseTender } from './lib/tender.js'
+import { MAX_BYTES, MAX_FILES, findDuplicates, readFile } from './lib/files.js'
 
 const SAMPLE = '/sample/'
 
@@ -15,6 +17,37 @@ export default function App() {
   const { t } = useT()
   const toast = useToast()
   const [data, setData] = useState(null) // { tender, requirements }
+  const [files, setFiles] = useState([])
+  const [busy, setBusy] = useState(false)
+  const dupOf = useMemo(() => findDuplicates(files), [files])
+
+  const addFiles = async (list) => {
+    setBusy(true)
+    const valid = files.filter((f) => !f.error)
+    let count = valid.length
+    let bytes = valid.reduce((s, f) => s + f.size, 0)
+    let overCount = false
+    let overSize = false
+    const added = []
+    for (const file of list) {
+      const r = await readFile(file)
+      if (!r.error) {
+        if (count + 1 > MAX_FILES) { overCount = true; continue }
+        if (bytes + r.size > MAX_BYTES) { overSize = true; continue }
+        count++
+        bytes += r.size
+      } else toast('error', t(r.error, { name: r.name }))
+      added.push(r)
+    }
+    setFiles((xs) => [...xs, ...added])
+    setBusy(false)
+    if (overCount) toast('error', t('tooMany'))
+    if (overSize) toast('error', t('tooBig'))
+    const ok = added.filter((f) => !f.error).length
+    if (ok) toast('success', t('filesAdded', { n: ok }))
+  }
+
+  const removeFile = (id) => setFiles((xs) => xs.filter((f) => f.id !== id))
 
   const loadTenderText = (text) => {
     try {
@@ -31,7 +64,16 @@ export default function App() {
 
   const loadSample = async () => {
     const res = await fetch(SAMPLE + 'requirements.json')
-    loadTenderText(await res.text())
+    if (!loadTenderText(await res.text())) return
+    const names = await (await fetch(SAMPLE + 'manifest.json')).json()
+    const list = await Promise.all(
+      names.map(async (n) => {
+        const blob = await (await fetch(SAMPLE + 'documents/' + encodeURIComponent(n))).blob()
+        return new File([blob], n, { type: n.endsWith('.pdf') ? 'application/pdf' : 'image/png' })
+      }),
+    )
+    setFiles([])
+    await addFiles(list)
   }
 
   // ?sample=1 auto-loads the sample pack (used for screenshots)
@@ -52,7 +94,7 @@ export default function App() {
       <TopBar tenderId={data?.tender.tender_id} />
 
       <main className="relative mx-auto max-w-7xl space-y-6 px-4 py-6">
-        <Stepper done={[!!data, false, false, false]} />
+        <Stepper done={[!!data, files.some((f) => !f.error), false, false]} />
 
         {!data ? (
           <section className="glass rise mx-auto max-w-2xl space-y-4 p-6">
@@ -71,7 +113,9 @@ export default function App() {
               <div className="lg:col-span-2">
                 <RequirementList requirements={data.requirements} />
               </div>
-              <aside className="glass rise grid place-items-center p-8 text-sm text-slate-400">{t('comingSoon')}</aside>
+              <aside className="lg:sticky lg:top-20 lg:self-start">
+                <FilePanel files={files} dupOf={dupOf} busy={busy} onAdd={addFiles} onRemove={removeFile} />
+              </aside>
             </div>
           </>
         )}

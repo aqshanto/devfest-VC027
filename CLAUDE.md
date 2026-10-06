@@ -11,9 +11,8 @@ Contest project (AI DevFest Vibe Coding, 90 min). Read `Plan.md` first.
   <type>: <short change summary>
 
   Prompt: "<prompt the user gave for this change>"
-
-  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
   ```
+  NO `Co-Authored-By` trailer (user does not want the Claude avatar on commits).
   Use `Manual edit` instead of the prompt if no AI was used. Never force push / rebase / amend pushed commits.
 - One feature per commit, push after each. Commit at least every 30 min.
 - Work stops at T+90.

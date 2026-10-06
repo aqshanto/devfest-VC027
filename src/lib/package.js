@@ -29,6 +29,19 @@ function fit(font, text, size, maxWidth) {
   return s + '...'
 }
 
+const encodable = (font, text) => safeText(font, text) === String(text ?? '')
+
+// Draw a pre-rendered text image (Bangla) with its baseline at y, shrunk to maxWidth if needed.
+function drawTextImage(page, t, x, y, maxWidth = Infinity) {
+  const s = Math.min(1, maxWidth / t.width)
+  page.drawImage(t.img, { x, y: y - t.baselineOffset * s, width: t.width * s, height: t.height * s })
+}
+
+async function embedTextImage(pdf, textImage, text, style) {
+  const r = await textImage(text, style)
+  return { ...r, img: await pdf.embedPng(r.png) }
+}
+
 // Documents that go into the package, in tender order, with their files.
 export function includedDocs(requirements, matches, files) {
   return [...requirements]
@@ -38,7 +51,7 @@ export function includedDocs(requirements, matches, files) {
     .filter((d) => d.file && !d.file.error)
 }
 
-function drawCover(page, fonts, tender, docs, startPages, generatedOn) {
+function drawCover(page, fonts, tender, docs, startPages, generatedOn, bn = {}) {
   const { reg, bold } = fonts
   const [W, H] = A4
   const M = 50
@@ -47,7 +60,8 @@ function drawCover(page, fonts, tender, docs, startPages, generatedOn) {
   page.drawRectangle({ x: 0, y: H - 150, width: W, height: 150, color: INDIGO })
   page.drawRectangle({ x: 0, y: H - 150, width: W, height: 6, color: VIOLET })
   page.drawText('TENDER SUBMISSION PACKAGE', { x: M, y: H - 60, size: 11, font: bold, color: rgb(0.85, 0.85, 1) })
-  page.drawText(fit(bold, tender.title || tender.tender_id, 24, W - 2 * M), { x: M, y: H - 95, size: 24, font: bold, color: rgb(1, 1, 1) })
+  if (bn.title) drawTextImage(page, bn.title, M, H - 95, W - 2 * M)
+  else page.drawText(fit(bold, tender.title || tender.tender_id, 24, W - 2 * M), { x: M, y: H - 95, size: 24, font: bold, color: rgb(1, 1, 1) })
   page.drawText(fit(reg, tender.tender_id, 13, W - 2 * M), { x: M, y: H - 122, size: 13, font: reg, color: rgb(0.9, 0.9, 1) })
 
   // Details
@@ -62,7 +76,8 @@ function drawCover(page, fonts, tender, docs, startPages, generatedOn) {
   let y = H - 190
   for (const [label, value] of rows) {
     page.drawText(label, { x: M, y, size: 10, font: reg, color: GREY })
-    page.drawText(fit(bold, value || '-', 11, W - M - 200), { x: 200, y, size: 11, font: bold, color: DARK })
+    if (bn[label]) drawTextImage(page, bn[label], 200, y, W - M - 200)
+    else page.drawText(fit(bold, value || '-', 11, W - M - 200), { x: 200, y, size: 11, font: bold, color: DARK })
     y -= 22
   }
 
@@ -88,13 +103,14 @@ function drawCover(page, fonts, tender, docs, startPages, generatedOn) {
 }
 
 // Bonus: index page after the cover - where each document starts.
-function drawIndex(page, fonts, tender, docs, startPages) {
+function drawIndex(page, fonts, tender, docs, startPages, bn = {}) {
   const { reg, bold } = fonts
   const [W, H] = A4
   const M = 50
   page.drawRectangle({ x: 0, y: H - 110, width: W, height: 110, color: INDIGO })
   page.drawRectangle({ x: 0, y: H - 110, width: W, height: 5, color: VIOLET })
   page.drawText('INDEX', { x: M, y: H - 60, size: 26, font: bold, color: rgb(1, 1, 1) })
+  if (bn.heading) drawTextImage(page, bn.heading, M + bold.widthOfTextAtSize('INDEX', 26) + 14, H - 60)
   page.drawText(fit(reg, `${tender.tender_id} - ${tender.title}`, 11, W - 2 * M), { x: M, y: H - 85, size: 11, font: reg, color: rgb(0.9, 0.9, 1) })
 
   let y = H - 150
@@ -116,6 +132,10 @@ function drawIndex(page, fonts, tender, docs, startPages) {
     for (let x = from; x < cols.pages - 8; x += 5) page.drawCircle({ x, y: y + 3, size: 0.6, color: LINE })
     page.drawText(start === end ? `${start}` : `${start}-${end}`, { x: cols.pages, y, size: 11, font: reg, color: GREY })
     page.drawText(String(start), { x: cols.start, y, size: 13, font: bold, color: INDIGO })
+    if (bn.titles?.[i]) {
+      drawTextImage(page, bn.titles[i], cols.doc, y - 16, cols.pages - cols.doc - 20)
+      y -= 16
+    }
     y -= 30
   })
 }
@@ -133,7 +153,7 @@ function drawFooter(page, font, text) {
  * withIndex: add an index page after the cover (bonus).
  * Returns { bytes: Uint8Array, totalPages }.
  */
-export async function buildPackage({ tender, requirements, matches, files, generatedOn, withIndex = false }) {
+export async function buildPackage({ tender, requirements, matches, files, generatedOn, withIndex = false, textImage }) {
   const docs = includedDocs(requirements, matches, files)
   const pdf = await PDFDocument.create()
   pdf.setTitle(`${tender.tender_id} Package`)
@@ -151,9 +171,25 @@ export async function buildPackage({ tender, requirements, matches, files, gener
     next += d.file.pages
   }
 
+  // Bonus: Bangla text on cover/index, drawn as images (only in the browser, where textImage exists)
+  const bnCover = {}
+  const bnIndex = {}
+  if (textImage) {
+    const dark = { size: 11, weight: 700, color: '#1f2133' }
+    if (!encodable(fonts.bold, tender.title)) bnCover.title = await embedTextImage(pdf, textImage, tender.title, { size: 24, weight: 700, color: '#ffffff' })
+    for (const [label, value] of [['Tender title', tender.title], ['Procuring entity', tender.procuring_entity], ['Bidder', tender.bidder]]) {
+      if (value && !encodable(fonts.bold, value)) bnCover[label] = await embedTextImage(pdf, textImage, value, dark)
+    }
+    if (withIndex) {
+      bnIndex.heading = await embedTextImage(pdf, textImage, 'সূচিপত্র', { size: 22, weight: 600, color: '#e0e0ff' })
+      bnIndex.titles = []
+      for (const { req } of docs) bnIndex.titles.push(await embedTextImage(pdf, textImage, req.title_bn, { size: 10.5, weight: 500, color: '#6b7385' }))
+    }
+  }
+
   const cover = pdf.addPage(A4)
-  drawCover(cover, fonts, tender, docs, startPages, generatedOn)
-  if (withIndex) drawIndex(pdf.addPage(A4), fonts, tender, docs, startPages)
+  drawCover(cover, fonts, tender, docs, startPages, generatedOn, bnCover)
+  if (withIndex) drawIndex(pdf.addPage(A4), fonts, tender, docs, startPages, bnIndex)
 
   // Each source page is embedded and scaled into a page of the same size,
   // leaving a blank band at the bottom so the footer never covers content.

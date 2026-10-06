@@ -48,7 +48,7 @@ Handy URL parameters: `?lang=bn|en`, `?theme=dark|light`, `?sample=1` (auto-load
   - the footer `<tender_id> | Page X of Y` on every page, including the cover. Each page is scaled into a reserved bottom band, so the footer never covers content.
 - **4.8 Download:** after **Generate package**, the user chooses **Preview** (an in-app PDF viewer, closed with Esc) or **Download**. The file is named `<tender_id>_Package.pdf`.
 - **4.9 Two languages:** a one-click EN/বাংলা toggle that is remembered in `localStorage`. Every label, button, status, error and instruction is translated, and numbers show as Bangla digits. Document names come from `title_bn` or `title_en`.
-- Output: [`output/T-2026-0417_Package.pdf`](output/T-2026-0417_Package.pdf) is built from the sample pack after resolving its problems (17 pages: cover, index and 15 document pages).
+- Output: [`output/T-2026-0417_Package.pdf`](output/T-2026-0417_Package.pdf) is built from the sample pack after resolving its problems (17 pages: cover, index with Bangla names, and 15 document pages). It was generated through the app with `scripts/output-from-browser.mjs`.
 - Polished UI: gradient and glass design, dark mode, 4-step stepper, toasts, mobile layout.
 
 ### Problems found in the sample pack
@@ -66,6 +66,7 @@ Handy URL parameters: `?lang=bn|en`, `?theme=dark|light`, `?sample=1` (auto-load
   - **Expiry date detection:** it finds dates after "Valid until / Expiry / Validity" in formats such as `2027-06-30`, `30 June 2027`, `June 30, 2027` and `30/06/2027`. The date shows as a chip on the file (red if it is before the deadline). On a manual match, a one-click **Use <date>** button appears. Dates filled by Auto-match get a "Read from PDF" badge so the user can check them. Without user action, the status still follows Section 5 (a manual match shows *Expiry date needed* until a date is set).
   - When two files fit the same document, Auto-match prefers the one that is still valid (so `trade_license_2026` wins over the expired 2025 one).
 - **✨ Auto-match:** one click suggests matches from the file names. It uses keywords and synonyms from `title_en` (trade/licence, tin/tax, vat/bin, solvency/bank and so on), prefers the newer year (`_2026` over `_2025`) and the original over a `(1)` copy, never uses two duplicates, and fills only documents that are still empty. An **Undo** button restores the previous matches.
+- **Bangla text on the PDF:** the index page shows each document's Bangla name (`title_bn`) under the English one and a "সূচিপত্র" heading. Bangla in tender fields (title, entity, bidder) also prints correctly on the cover. The browser draws the text on a canvas, so conjuncts such as ন্স, ক্ষ and ত্র are shaped correctly, and the image is embedded with pdf-lib.
 - **Index page after the cover:** lists each document with its page range and the page where it starts, with dotted leaders. It is on by default and can be turned off with a checkbox. The cover table also shows the start pages.
 - **Export checklist (CSV):** the CSV button downloads `<tender_id>_Checklist.csv` with Order, Document, Mandatory, File name, Pages, Expiry date and Status, in the chosen language. It has a UTF-8 BOM so Excel shows Bangla correctly.
 - **Wrong-file warning:** when a file's name or text clearly belongs to another document (for example `trade_license_2025.pdf` matched to TIN Certificate), a soft amber warning appears. The status still follows Section 5 exactly.
@@ -77,7 +78,7 @@ Handy URL parameters: `?lang=bn|en`, `?theme=dark|light`, `?sample=1` (auto-load
 
 - The date picker shows the browser's own date format (for example mm/dd/yyyy). It is stored as YYYY-MM-DD.
 - The PDF cover page is English only (the problem asks for English); Bangla on the cover is a bonus item.
-- Bangla characters in tender fields (title, entity, bidder) print as `?` on the English cover page, because the standard PDF font has no Bangla glyphs.
+- Bangla on the PDF is drawn as small images, so that text cannot be selected or searched in the PDF. The Node script `scripts/make-output.mjs` cannot draw it (it has no canvas); `scripts/output-from-browser.mjs` builds the full version.
 - Scanned PDFs have no text, so Smart Read cannot recognise them (for example `scan_0042.pdf`). Match them by hand.
 - Each page is scaled to about 96% to make room for the footer, so page content is slightly smaller.
 - Download-manager browser extensions (for example IDM) can intercept PDF requests and break **Try sample**. Uploading files by hand still works.

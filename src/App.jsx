@@ -15,6 +15,7 @@ import { BLOCKING, getAllStatuses } from './lib/status.js'
 import GeneratePanel from './components/GeneratePanel.jsx'
 import PdfPreview from './components/PdfPreview.jsx'
 import { buildPackage, downloadBytes } from './lib/package.js'
+import { textImage } from './lib/bntext.js'
 import { useToast } from './components/Toasts.jsx'
 import { useT } from './i18n.js'
 import { parseTender, todayISO } from './lib/tender.js'
@@ -114,7 +115,7 @@ export default function App() {
     if (blocked.length) return
     setGenerating(true)
     try {
-      const res = await buildPackage({ ...data, matches, files, generatedOn: todayISO(), withIndex })
+      const res = await buildPackage({ ...data, matches, files, generatedOn: todayISO(), withIndex, textImage })
       setResult(res)
       toast('success', t('generated', { n: res.totalPages }))
     } catch (e) {

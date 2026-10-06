@@ -69,13 +69,15 @@ Handy URL parameters: `?lang=bn|en`, `?theme=dark|light`, `?sample=1` (auto-load
 - **Index page after the cover:** lists each document with its page range and the page where it starts, with dotted leaders. It is on by default and can be turned off with a checkbox. The cover table also shows the start pages.
 - **Export checklist (CSV):** the CSV button downloads `<tender_id>_Checklist.csv` with Order, Document, Mandatory, File name, Pages, Expiry date and Status, in the chosen language. It has a UTF-8 BOM so Excel shows Bangla correctly.
 - **Wrong-file warning:** when a file's name or text clearly belongs to another document (for example `trade_license_2025.pdf` matched to TIN Certificate), a soft amber warning appears. The status still follows Section 5 exactly.
-- **Handle bad files safely:** damaged or password-protected PDFs show a clear bilingual message instead of crashing.
+- **Handle bad files safely:** damaged, truncated, empty, fake (`.pdf` that is not a PDF) and password-protected files each show a clear bilingual message instead of crashing. All of these were tested.
 - **Preview before download:** after generating, the package can be viewed in an in-app PDF viewer or downloaded directly.
 
 ## Known issues
 
 - The date picker shows the browser's own date format (for example mm/dd/yyyy). It is stored as YYYY-MM-DD.
 - The PDF cover page is English only (the problem asks for English); Bangla on the cover is a bonus item.
+- Bangla characters in tender fields (title, entity, bidder) print as `?` on the English cover page, because the standard PDF font has no Bangla glyphs.
+- Scanned PDFs have no text, so Smart Read cannot recognise them (for example `scan_0042.pdf`). Match them by hand.
 - Each page is scaled to about 96% to make room for the footer, so page content is slightly smaller.
 - Download-manager browser extensions (for example IDM) can intercept PDF requests and break **Try sample**. Uploading files by hand still works.
 

@@ -82,14 +82,15 @@ export default function App() {
   // Generate (task 4.7 / 4.8)
   const [result, setResult] = useState(null) // { bytes, totalPages }
   const [generating, setGenerating] = useState(false)
-  useEffect(() => setResult(null), [data, files, matches, expiry])
+  const [withIndex, setWithIndex] = useState(true)
+  useEffect(() => setResult(null), [data, files, matches, expiry, withIndex])
   const packageName = data ? `${data.tender.tender_id}_Package.pdf` : ''
 
   const generate = async () => {
     if (blocked.length) return
     setGenerating(true)
     try {
-      const res = await buildPackage({ ...data, matches, files, generatedOn: todayISO() })
+      const res = await buildPackage({ ...data, matches, files, generatedOn: todayISO(), withIndex })
       setResult(res)
       downloadBytes(res.bytes, packageName)
       toast('success', t('generated', { n: res.totalPages }))
@@ -253,6 +254,8 @@ export default function App() {
                   result={result}
                   fileName={packageName}
                   onGenerate={generate}
+                  withIndex={withIndex}
+                  onWithIndex={setWithIndex}
                   onDownload={() => downloadBytes(result.bytes, packageName)}
                 />
                 <FilePanel files={files} dupOf={dupOf} busy={busy} onAdd={addFiles} onRemove={removeFile} usedBy={usedBy} />

@@ -87,6 +87,39 @@ function drawCover(page, fonts, tender, docs, startPages, generatedOn) {
   })
 }
 
+// Bonus: index page after the cover - where each document starts.
+function drawIndex(page, fonts, tender, docs, startPages) {
+  const { reg, bold } = fonts
+  const [W, H] = A4
+  const M = 50
+  page.drawRectangle({ x: 0, y: H - 110, width: W, height: 110, color: INDIGO })
+  page.drawRectangle({ x: 0, y: H - 110, width: W, height: 5, color: VIOLET })
+  page.drawText('INDEX', { x: M, y: H - 60, size: 26, font: bold, color: rgb(1, 1, 1) })
+  page.drawText(fit(reg, `${tender.tender_id} - ${tender.title}`, 11, W - 2 * M), { x: M, y: H - 85, size: 11, font: reg, color: rgb(0.9, 0.9, 1) })
+
+  let y = H - 150
+  const cols = { no: M, doc: M + 34, pages: W - M - 150, start: W - M - 50 }
+  page.drawRectangle({ x: M - 6, y: y - 6, width: W - 2 * M + 12, height: 22, color: rgb(0.95, 0.95, 0.99) })
+  for (const [txt, x] of [['#', cols.no], ['Document', cols.doc], ['Pages', cols.pages], ['Page', cols.start]]) {
+    page.drawText(txt, { x, y, size: 9, font: bold, color: GREY })
+  }
+  y -= 28
+  docs.forEach(({ req, file }, i) => {
+    if (y < FOOTER_BAND + 30) return
+    const start = startPages[i]
+    const end = start + file.pages - 1
+    const title = fit(bold, req.title_en, 12, cols.pages - cols.doc - 20)
+    page.drawText(String(i + 1), { x: cols.no, y, size: 12, font: bold, color: INDIGO })
+    page.drawText(title, { x: cols.doc, y, size: 12, font: bold, color: DARK })
+    // dotted leader between title and page number
+    const from = cols.doc + bold.widthOfTextAtSize(title, 12) + 6
+    for (let x = from; x < cols.pages - 8; x += 5) page.drawCircle({ x, y: y + 3, size: 0.6, color: LINE })
+    page.drawText(start === end ? `${start}` : `${start}-${end}`, { x: cols.pages, y, size: 11, font: reg, color: GREY })
+    page.drawText(String(start), { x: cols.start, y, size: 13, font: bold, color: INDIGO })
+    y -= 30
+  })
+}
+
 function drawFooter(page, font, text) {
   const { width } = page.getSize()
   const size = 9
@@ -97,10 +130,10 @@ function drawFooter(page, font, text) {
 
 /**
  * Build the package (Problem §6).
- * opts.extraFrontPages: optional async (pdf, fonts, ctx) => number of pages it inserted after the cover (bonus index page)
+ * withIndex: add an index page after the cover (bonus).
  * Returns { bytes: Uint8Array, totalPages }.
  */
-export async function buildPackage({ tender, requirements, matches, files, generatedOn, extraFrontPages }) {
+export async function buildPackage({ tender, requirements, matches, files, generatedOn, withIndex = false }) {
   const docs = includedDocs(requirements, matches, files)
   const pdf = await PDFDocument.create()
   pdf.setTitle(`${tender.tender_id} Package`)
@@ -110,7 +143,7 @@ export async function buildPackage({ tender, requirements, matches, files, gener
     bold: await pdf.embedFont(StandardFonts.HelveticaBold),
   }
 
-  const frontCount = 1 + (extraFrontPages?.count || 0)
+  const frontCount = withIndex ? 2 : 1
   const startPages = []
   let next = frontCount + 1
   for (const d of docs) {
@@ -120,7 +153,7 @@ export async function buildPackage({ tender, requirements, matches, files, gener
 
   const cover = pdf.addPage(A4)
   drawCover(cover, fonts, tender, docs, startPages, generatedOn)
-  if (extraFrontPages) await extraFrontPages.draw(pdf, fonts, { docs, startPages, A4, FOOTER_BAND })
+  if (withIndex) drawIndex(pdf.addPage(A4), fonts, tender, docs, startPages)
 
   // Each source page is embedded and scaled into a page of the same size,
   // leaving a blank band at the bottom so the footer never covers content.

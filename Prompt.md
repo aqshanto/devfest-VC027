@@ -11,5 +11,6 @@
 | F5 | Deliverables | "next" (F5: screenshots with headless Chrome into screenshots/, output PDF, full README per Rulebook 9.3) |
 | B1 | Auto-match | "next" (Bonus 1: auto-match files to documents from file names, with undo) |
 | B1b | Wrong-file warning | "ami jokhon TIN certificate e onno kono document dissilam eta seta ke thik ase dhore nissilo. eta ki ekta problem na ?" |
+| B2 | Index page | "next" (Bonus 2: index page after the cover showing the page number where each document starts) |
 
 Most useful prompt (for README): _to be chosen at the end._

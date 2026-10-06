@@ -36,7 +36,7 @@ const st = getAllStatuses(requirements, matches, expiry, tender.submission_deadl
 const blocked = Object.entries(st).filter(([, s]) => BLOCKING.has(s))
 if (blocked.length) throw new Error('Blocked: ' + JSON.stringify(blocked))
 
-const { bytes, totalPages } = await buildPackage({ tender, requirements, matches, files, generatedOn: todayISO() })
+const { bytes, totalPages } = await buildPackage({ tender, requirements, matches, files, generatedOn: todayISO(), withIndex: true })
 const out = `output/${tender.tender_id}_Package.pdf`
 writeFileSync(out, bytes)
 console.log(out, totalPages, 'pages', st)

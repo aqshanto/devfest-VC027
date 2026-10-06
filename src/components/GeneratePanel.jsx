@@ -1,7 +1,7 @@
-import { AlertCircle, CheckCircle2, Download, Loader2, PackageCheck, Wand2 } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Download, ListOrdered, Loader2, PackageCheck, Wand2 } from 'lucide-react'
 import { useT } from '../i18n.js'
 
-export default function GeneratePanel({ blocked, statuses, busy, result, fileName, onGenerate, onDownload }) {
+export default function GeneratePanel({ blocked, statuses, busy, result, fileName, onGenerate, onDownload, withIndex, onWithIndex }) {
   const { t, lang, num } = useT()
   const ready = blocked.length === 0
 
@@ -11,6 +11,17 @@ export default function GeneratePanel({ blocked, statuses, busy, result, fileNam
         {busy ? <Loader2 className="size-5 animate-spin" /> : <Wand2 className="size-5" />}
         {busy ? t('generating') : t('generate')}
       </button>
+
+      <label className="flex cursor-pointer items-center gap-2 rounded-xl px-1 text-sm text-slate-600 dark:text-slate-300">
+        <input
+          type="checkbox"
+          checked={withIndex}
+          onChange={(e) => onWithIndex(e.target.checked)}
+          className="size-4 cursor-pointer accent-violet-600"
+        />
+        <ListOrdered className="size-4 text-violet-500" />
+        {t('withIndex')}
+      </label>
 
       {!ready ? (
         <div className="rounded-xl bg-rose-50 p-3 text-sm dark:bg-rose-500/10">

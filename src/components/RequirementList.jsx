@@ -1,8 +1,12 @@
+import { useState } from 'react'
 import { ListChecks, Timer } from 'lucide-react'
 import { useT } from '../i18n.js'
 
-export default function RequirementList({ requirements, renderRight, renderBelow, actions }) {
+export const DRAG_TYPE = 'application/x-tender-file'
+
+export default function RequirementList({ requirements, renderRight, renderBelow, actions, onDropFile }) {
   const { t, num, lang } = useT()
+  const [over, setOver] = useState(null)
   return (
     <section className="glass rise p-4 sm:p-5">
       <h3 className="mb-4 flex items-center gap-2 text-base font-bold">
@@ -18,7 +22,24 @@ export default function RequirementList({ requirements, renderRight, renderBelow
           <li
             key={r.id}
             id={`req-${r.id}`}
-            className="rounded-xl border border-slate-200/70 bg-white/70 p-3 transition hover:shadow-md dark:border-slate-700/60 dark:bg-slate-800/50"
+            onDragOver={(e) => {
+              if (!e.dataTransfer.types.includes(DRAG_TYPE)) return
+              e.preventDefault()
+              setOver(r.id)
+            }}
+            onDragLeave={() => setOver((o) => (o === r.id ? null : o))}
+            onDrop={(e) => {
+              const fileId = e.dataTransfer.getData(DRAG_TYPE)
+              setOver(null)
+              if (!fileId) return
+              e.preventDefault()
+              onDropFile?.(r.id, fileId)
+            }}
+            className={`rounded-xl border p-3 transition hover:shadow-md ${
+              over === r.id
+                ? 'scale-[1.01] border-violet-500 bg-violet-50 shadow-lg ring-2 ring-violet-400/50 dark:bg-violet-500/15'
+                : 'border-slate-200/70 bg-white/70 dark:border-slate-700/60 dark:bg-slate-800/50'
+            }`}
           >
             <div className="flex flex-wrap items-center gap-3">
               <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 text-sm font-bold text-white">

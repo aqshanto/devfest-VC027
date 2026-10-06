@@ -12,7 +12,7 @@ import FilePanel from './components/FilePanel.jsx'
 import MatchControl from './components/MatchControl.jsx'
 import StatusChip from './components/StatusChip.jsx'
 import SummaryBar from './components/SummaryBar.jsx'
-import { BLOCKING, getAllStatuses } from './lib/status.js'
+import { BLOCKING, getAllStatuses, matchBlockReason } from './lib/status.js'
 import GeneratePanel from './components/GeneratePanel.jsx'
 import PdfPreview from './components/PdfPreview.jsx'
 import { buildPackage, downloadBytes } from './lib/package.js'
@@ -98,6 +98,13 @@ export default function App() {
       checklistCsv({ requirements: data.requirements, matches, expiry, files, statuses, lang, t }),
       `${data.tender.tender_id}_Checklist.csv`,
     )
+
+  // Drag a file from the list onto a document
+  const dropFile = (reqId, fileId) => {
+    const why = matchBlockReason(fileId, reqId, files, matches)
+    if (why) return toast('error', t(why))
+    setMatch(reqId, fileId)
+  }
 
   const setExpiryFor = (reqId, date, auto = false) => {
     setExpiry((e) => ({ ...e, [reqId]: date }))
@@ -301,6 +308,7 @@ export default function App() {
               <div className="lg:col-span-2">
                 <RequirementList
                   requirements={data.requirements}
+                  onDropFile={dropFile}
                   actions={
                     <>
                       <button className="btn-ghost px-3 py-1.5 text-xs" onClick={exportCsv} title={t('exportCsv')}>

@@ -1,5 +1,6 @@
 import { CalendarClock, Copy, FileText, FileX2, Files, Link2, Loader2, ScanSearch, Trash2 } from 'lucide-react'
 import { guessReq } from '../lib/automatch.js'
+import { DRAG_TYPE } from './RequirementList.jsx'
 import { useT } from '../i18n.js'
 import { formatSize } from '../lib/files.js'
 import DropZone from './DropZone.jsx'
@@ -38,7 +39,13 @@ export default function FilePanel({ files, dupOf, busy, onAdd, onRemove, usedBy 
             return (
               <li
                 key={f.id}
-                className={`rise flex items-start gap-3 rounded-xl border p-3 text-sm ${
+                draggable={!bad}
+                onDragStart={(e) => {
+                  e.dataTransfer.setData(DRAG_TYPE, f.id)
+                  e.dataTransfer.effectAllowed = 'link'
+                }}
+                title={bad ? undefined : t('dragHint')}
+                className={`rise flex items-start gap-3 rounded-xl border p-3 text-sm ${bad ? '' : 'cursor-grab active:cursor-grabbing'} ${
                   bad
                     ? 'border-rose-200 bg-rose-50/80 dark:border-rose-500/30 dark:bg-rose-500/10'
                     : dup
